@@ -1,0 +1,30 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# Local/private runtime state
+snapshots/
+private/
+backups/
+.hackermacui/
+*.local
+*.private
+
+# Sensitive local files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.mobileprovision
+
+# Logs, caches, dependencies
+*.log
+*.tmp
+.cache/
+node_modules/
+dist/
+build/
