@@ -368,6 +368,7 @@ After applying, open AeroSpace and SwiftBar once so macOS can grant any required
 ./scripts/check-drift.sh  # compare live configs against repo snapshots
 ./scripts/template.sh     # list, activate, render, and switch profile templates
 ./scripts/verify.sh       # verify shell, JSON, config contracts, and Swift build
+./scripts/release-check.sh # run publication/public-safety gate
 ./scripts/build-launcher-app.sh # build dist/HackermacLauncher.app
 ./scripts/launcher-login.sh # install/remove Launcher launch-at-login
 ./scripts/snapshot.sh     # private local snapshot, ignored by git

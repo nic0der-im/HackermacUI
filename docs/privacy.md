@@ -19,4 +19,12 @@ HackermacUI is public by design, so it follows a curated-safe policy.
 
 ## Before publishing
 
-Run the repository scan described in the release checklist and move any personal data to ignored local state before pushing.
+Run the publication gate before pushing:
+
+```bash
+./scripts/release-check.sh
+```
+
+The gate checks for a clean worktree, public `default` repo profile, tracked private/generated files, unignored private artifacts, absolute private `/Users/...` paths, obvious secret assignments, config verification, and live drift.
+
+Use `./scripts/release-check.sh --allow-dirty` only while developing the release gate itself.

@@ -118,3 +118,11 @@ Use this before publishing or after agent-driven changes:
 ```
 
 It checks shell syntax, JSON syntax, semantic config contracts, and the Swift launcher build.
+
+For publication, run:
+
+```bash
+./scripts/release-check.sh
+```
+
+The release gate adds git cleanliness, public profile, public-safety, and live drift checks.
