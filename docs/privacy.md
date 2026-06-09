@@ -28,3 +28,11 @@ Run the publication gate before pushing:
 The gate checks for a clean worktree, public `default` repo profile, tracked private/generated files, unignored private artifacts, absolute private `/Users/...` paths, obvious secret assignments, config verification, and live drift.
 
 Use `./scripts/release-check.sh --allow-dirty` only while developing the release gate itself.
+
+CI uses:
+
+```bash
+./scripts/release-check.sh --ci
+```
+
+CI skips live drift because GitHub Actions does not have the local AeroSpace/SwiftBar runtime state. Run the normal release check locally before publishing from your machine.

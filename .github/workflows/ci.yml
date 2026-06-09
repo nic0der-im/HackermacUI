@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify HackermacUI
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show tool versions
+        run: |
+          sw_vers
+          swift --version
+          python3 --version
+
+      - name: Verify suite
+        run: ./scripts/verify.sh
+
+      - name: Release safety gate
+        run: ./scripts/release-check.sh --ci

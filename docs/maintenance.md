@@ -11,6 +11,8 @@
 7. Run `./scripts/release-check.sh` before publishing or pushing.
 8. Commit with a conventional commit message.
 
+GitHub Actions runs `./scripts/verify.sh` and `./scripts/release-check.sh --ci` on push and pull requests. The CI release gate skips live drift; local release still requires the normal release check.
+
 Do not run `./scripts/apply.sh` as a routine reload. It applies multiple managed config trees to live paths. Prefer targeted reloads while iterating.
 
 ## Reload commands

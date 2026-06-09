@@ -3,19 +3,25 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ALLOW_DIRTY=0
+CI_MODE=0
 
 usage() {
   cat <<'EOF'
-Usage: scripts/release-check.sh [--allow-dirty]
+Usage: scripts/release-check.sh [--allow-dirty] [--ci]
 
 Runs the publication gate for HackermacUI. By default it requires a clean git
 worktree. Use --allow-dirty only while developing the gate itself.
+
+Options:
+  --allow-dirty   Permit dirty worktree while developing this gate.
+  --ci            Run public checks only; skip live drift checks.
 EOF
 }
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --allow-dirty) ALLOW_DIRTY=1 ;;
+    --ci) CI_MODE=1 ;;
     -h|--help) usage; exit 0 ;;
     *) usage >&2; exit 1 ;;
   esac
@@ -124,7 +130,11 @@ run_gate 'no unignored private artifacts pending' check_no_unignored_private_art
 run_gate 'no absolute private /Users paths in tracked files' check_absolute_private_paths
 run_gate 'no obvious secret assignments in tracked files' check_secret_markers
 run_gate 'suite verification passes' "$ROOT/scripts/verify.sh"
-run_gate 'live drift check passes' "$ROOT/scripts/check-drift.sh"
+if [[ "$CI_MODE" == "1" ]]; then
+  pass 'live drift check skipped in CI'
+else
+  run_gate 'live drift check passes' "$ROOT/scripts/check-drift.sh"
+fi
 
 if (( failures > 0 )); then
   printf '\nRelease check failed: %d gate(s) failed.\n' "$failures" >&2

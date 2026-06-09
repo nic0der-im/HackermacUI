@@ -126,3 +126,11 @@ For publication, run:
 ```
 
 The release gate adds git cleanliness, public profile, public-safety, and live drift checks.
+
+CI may run the public subset with:
+
+```bash
+./scripts/release-check.sh --ci
+```
+
+`--ci` skips live drift and does not replace the local publication check.
