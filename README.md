@@ -366,7 +366,7 @@ After applying, open AeroSpace and SwiftBar once so macOS can grant any required
 ./scripts/doctor.sh       # verify required apps, CLIs, and macOS settings
 ./scripts/backup.sh       # copy live configs to ~/.hackermacui/backups/<timestamp>
 ./scripts/check-drift.sh  # compare live configs against repo snapshots
-./scripts/template.sh     # list, render, and switch profile templates
+./scripts/template.sh     # list, activate, render, and switch profile templates
 ./scripts/verify.sh       # verify shell, JSON, and Swift build
 ./scripts/build-launcher-app.sh # build dist/HackermacLauncher.app
 ./scripts/launcher-login.sh # install/remove Launcher launch-at-login

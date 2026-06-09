@@ -70,14 +70,20 @@ Optional files:
 |---|---|
 | `launcher.menu.json` | Full launcher menu rendered into `configs/launcher/menu.json`. |
 
-Switch profiles with:
+Select a live profile without mutating repo config:
 
 ```bash
-./scripts/template.sh switch default
-./scripts/template.sh switch ignacio-dual-lg --reload
+./scripts/template.sh activate ignacio-dual-lg
+./scripts/apply.sh
 ```
 
-`switch` creates a backup first, renders repo config, and never runs `scripts/apply.sh`.
+`activate` writes local state under `~/.hackermacui/`. `apply.sh` renders the active profile into local state and points live AeroSpace at it.
+
+Render repo-published config only when changing the public baseline:
+
+```bash
+./scripts/template.sh render default
+```
 
 ## SwiftBar Widget Contract
 

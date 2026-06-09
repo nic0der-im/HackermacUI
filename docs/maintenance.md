@@ -29,7 +29,7 @@ open 'swiftbar://refreshallplugins'
 | Menu-bar workspace strip | SwiftBar | `configs/swiftbar/plugins/00-hackermacui.3s.sh` | `open 'swiftbar://refreshallplugins'` |
 | Focus border | JankyBorders | `configs/borders/bordersrc` | `~/.config/borders/bordersrc` |
 | Terminal feel | Ghostty | `configs/ghostty/config` | restart Ghostty windows |
-| Templates/profiles | Repo scripts | `configs/templates/profiles/`, `scripts/template.sh` | `scripts/template.sh switch <profile> --reload` |
+| Templates/profiles | Repo scripts | `configs/templates/profiles/`, `scripts/template.sh` | `scripts/template.sh activate <profile> && scripts/apply.sh` |
 | Launcher login item | LaunchAgent script | `scripts/launcher-login.sh` | `scripts/launcher-login.sh install` |
 
 ## Borders Tuning

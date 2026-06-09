@@ -2,9 +2,20 @@
 set -euo pipefail
 
 PLUGIN_DIR="$(defaults read com.ameba.SwiftBar PluginDirectory 2>/dev/null || true)"
+LIVE_PROFILE_FILE="$HOME/.hackermacui/live-profile"
+
+if [[ -f "$LIVE_PROFILE_FILE" ]]; then
+  LIVE_PROFILE="$(tr -d '\n' <"$LIVE_PROFILE_FILE")"
+else
+  LIVE_PROFILE="default"
+fi
 
 echo "== Services =="
 brew services list | egrep 'borders|atuin|redis|postgresql' || true
+
+echo
+echo "== HackermacUI profile =="
+echo "Live profile: $LIVE_PROFILE"
 
 echo
 echo "== Installed menu bar stack =="

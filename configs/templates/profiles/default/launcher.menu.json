@@ -51,9 +51,9 @@
       "subtitle": "Switch HackermacUI templates",
       "icon": "rectangle.3.group",
       "items": [
-        { "title": "Public Default", "subtitle": "4 workspaces, single monitor", "icon": "display", "confirm": true, "action": { "type": "run", "command": "${repo}/scripts/template.sh", "args": ["switch", "default", "--reload"] } },
-        { "title": "Ignacio Dual LG", "subtitle": "6 workspaces, LG + built-in", "icon": "display.2", "confirm": true, "action": { "type": "run", "command": "${repo}/scripts/template.sh", "args": ["switch", "ignacio-dual-lg", "--reload"] } },
-        { "title": "Show Current Profile", "subtitle": "Print active template profile", "icon": "info.circle", "action": { "type": "ghostty", "command": "./scripts/template.sh current; exec zsh", "cwd": "${repo}" } },
+        { "title": "Public Default", "subtitle": "Apply 4 workspaces without dirtying repo", "icon": "display", "confirm": true, "action": { "type": "ghostty", "command": "./scripts/template.sh activate default && ./scripts/apply.sh; exec zsh", "cwd": "${repo}" } },
+        { "title": "Ignacio Dual LG", "subtitle": "Apply 6 workspaces, LG + built-in", "icon": "display.2", "confirm": true, "action": { "type": "ghostty", "command": "./scripts/template.sh activate ignacio-dual-lg && ./scripts/apply.sh; exec zsh", "cwd": "${repo}" } },
+        { "title": "Show Live Profile", "subtitle": "Print selected live profile", "icon": "info.circle", "action": { "type": "ghostty", "command": "./scripts/template.sh live; exec zsh", "cwd": "${repo}" } },
         { "title": "List Profiles", "subtitle": "Print available template profiles", "icon": "list.bullet", "action": { "type": "ghostty", "command": "./scripts/template.sh list; exec zsh", "cwd": "${repo}" } }
       ]
     },
