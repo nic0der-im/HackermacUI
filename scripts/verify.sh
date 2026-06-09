@@ -13,6 +13,9 @@ while IFS= read -r json_file; do
   python3 -m json.tool "$json_file" >/dev/null
 done < <(find "$ROOT/configs" -name '*.json' -type f | sort)
 
+printf '\n== Config contracts ==\n'
+"$ROOT/scripts/validate-configs.py"
+
 printf '\n== Swift build ==\n'
 swift build --package-path "$ROOT/apps/HackermacLauncher"
 

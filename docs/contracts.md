@@ -117,4 +117,4 @@ Use this before publishing or after agent-driven changes:
 ./scripts/verify.sh
 ```
 
-It checks shell syntax, JSON syntax, and the Swift launcher build.
+It checks shell syntax, JSON syntax, semantic config contracts, and the Swift launcher build.

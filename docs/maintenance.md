@@ -7,7 +7,7 @@
 3. Change one tool at a time.
 4. Reload only the affected tool.
 5. Run `./scripts/check-drift.sh`.
-6. Run `./scripts/verify.sh` when scripts, JSON, or launcher code changed.
+6. Run `./scripts/verify.sh` when scripts, JSON, profile templates, or launcher code changed.
 7. Commit with a conventional commit message.
 
 Do not run `./scripts/apply.sh` as a routine reload. It applies multiple managed config trees to live paths. Prefer targeted reloads while iterating.
