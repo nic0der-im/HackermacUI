@@ -17,7 +17,18 @@ set -uo pipefail
 AEROSPACE="${AEROSPACE:-/opt/homebrew/bin/aerospace}"
 SCRIPT_PATH="${SWIFTBAR_PLUGIN_PATH:-$0}"
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
-WORKSPACES="${AEROSPACE_SWIFTBAR_WORKSPACES:-1 2 3 4 5 6}"
+PROFILE_ENV="${HACKERMACUI_PROFILE_ENV:-$HOME/.config/aerospace/scripts/profile.env}"
+REPO_PROFILE_ENV="$(cd "$SCRIPT_DIR/../../../.." 2>/dev/null && pwd)/configs/aerospace/scripts/profile.env"
+
+if [[ -f "$PROFILE_ENV" ]]; then
+  # shellcheck disable=SC1090
+  source "$PROFILE_ENV"
+elif [[ -f "$REPO_PROFILE_ENV" ]]; then
+  # shellcheck disable=SC1090
+  source "$REPO_PROFILE_ENV"
+fi
+
+WORKSPACES="${AEROSPACE_SWIFTBAR_WORKSPACES:-${HACKERMACUI_WORKSPACES:-1 2 3 4}}"
 TIMEOUT_TICKS="${AEROSPACE_SWIFTBAR_TIMEOUT_TICKS:-15}"
 MAX_ICONS_PER_WORKSPACE="${AEROSPACE_SWIFTBAR_MAX_ICONS:-5}"
 REAL_ICONS="${AEROSPACE_SWIFTBAR_REAL_ICONS:-1}"

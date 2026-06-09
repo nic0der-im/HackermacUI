@@ -36,6 +36,22 @@ Apply only after reviewing the repo configs you want to sync:
 
 `apply.sh` creates a backup first, then symlinks `~/.aerospace.toml`, syncs AeroSpace helper scripts, SwiftBar plugins, JankyBorders config, Ghostty config, and Fastfetch config into live paths. The sync steps use delete semantics for managed folders, so do not run it as a blind restore.
 
+## Bootstrap
+
+For a fresh machine, the safe curl path is:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/nic0der-im/HackermacUI/main/scripts/bootstrap.sh | bash
+```
+
+The bootstrap clones the repo and prints the safe next steps. It does not run `apply.sh` automatically.
+
+To install dependencies from a cloned repo:
+
+```bash
+./scripts/install-deps.sh
+```
+
 ## macOS permissions
 
 AeroSpace needs Accessibility permissions:
@@ -56,3 +72,22 @@ swift run HackermacLauncher
 ```
 
 While running, it registers `Option+Space` and reads `configs/launcher/menu.json` plus `configs/launcher/theme.json` from the repo.
+
+Build the local app bundle with:
+
+```bash
+./scripts/build-launcher-app.sh
+./scripts/restart-launcher.sh
+```
+
+Enable launch-at-login after building the app:
+
+```bash
+./scripts/launcher-login.sh install
+```
+
+Remove it with:
+
+```bash
+./scripts/launcher-login.sh uninstall
+```

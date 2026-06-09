@@ -11,14 +11,28 @@ swift run HackermacLauncher
 
 The launcher appears at startup and registers `Option+Space` while it is running.
 
-This is currently a SwiftPM debug/runtime flow. Packaging as a signed `.app` and launch-at-login item is future work.
+For the app-bundle flow, build the local `.app` bundle:
+
+```bash
+./scripts/build-launcher-app.sh
+./scripts/restart-launcher.sh
+```
+
+The generated bundle lives at `dist/HackermacLauncher.app` and is intentionally ignored by git. Launch-at-login is still future work.
+
+Enable or remove launch-at-login with:
+
+```bash
+./scripts/launcher-login.sh install
+./scripts/launcher-login.sh uninstall
+```
 
 ## Config
 
 | File | Purpose |
 |---|---|
 | `../../configs/launcher/menu.json` | Menu tree and actions. |
-| `../../configs/launcher/theme.json` | Panel material, width, and visual tuning. |
+| `../../configs/launcher/theme.json` | Panel material, width, visual tuning, and hotkey. |
 
 Supported action types:
 
@@ -37,7 +51,7 @@ Actions are declarative by design. Add new behavior to the schema instead of exe
 
 | Behavior | Detail |
 |---|---|
-| Hotkey | `Option+Space` toggles the panel. |
+| Hotkey | Configured in `configs/launcher/theme.json`; default is `Option+Space`. |
 | Navigation | Arrow keys move, Enter opens/runs, Esc goes back or hides at root. |
 | Open state | The panel resets to the root menu whenever it is shown. |
 | Window ownership | AeroSpace keeps the launcher floating; JankyBorders blacklists it. |

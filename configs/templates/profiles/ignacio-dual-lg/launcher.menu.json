@@ -42,6 +42,8 @@
         { "title": "Workspace 2", "icon": "2.circle", "action": { "type": "aerospace", "args": ["workspace", "2"] } },
         { "title": "Workspace 3", "icon": "3.circle", "action": { "type": "aerospace", "args": ["workspace", "3"] } },
         { "title": "Workspace 4", "icon": "4.circle", "action": { "type": "aerospace", "args": ["workspace", "4"] } },
+        { "title": "Workspace 5", "icon": "5.circle", "action": { "type": "aerospace", "args": ["workspace", "5"] } },
+        { "title": "Workspace 6", "icon": "6.circle", "action": { "type": "aerospace", "args": ["workspace", "6"] } },
         { "title": "Next Active Workspace", "subtitle": "HackermacUI active workspace switcher", "icon": "arrow.clockwise", "action": { "type": "run", "command": "${repo}/configs/aerospace/scripts/next-active-workspace.sh" } },
         { "title": "Balance Sizes", "subtitle": "AeroSpace balance-sizes", "icon": "square.grid.2x2", "action": { "type": "aerospace", "args": ["balance-sizes"] } }
       ]
@@ -124,8 +126,8 @@
         { "title": "Cmd+O", "subtitle": "Open Obsidian", "icon": "keyboard" },
         { "title": "Cmd+D", "subtitle": "Open LazyDocker", "icon": "keyboard" },
         { "title": "Cmd+Shift+A", "subtitle": "Open OpenCode CLI", "icon": "keyboard" },
-        { "title": "Alt+1..4", "subtitle": "Switch workspace", "icon": "keyboard" },
-        { "title": "Alt+Ctrl+1..4", "subtitle": "Move focused window to workspace", "icon": "keyboard" },
+        { "title": "Alt+1..6", "subtitle": "Switch workspace", "icon": "keyboard" },
+        { "title": "Alt+Ctrl+1..6", "subtitle": "Move focused window to workspace", "icon": "keyboard" },
         { "title": "Alt+Arrows", "subtitle": "Focus windows", "icon": "keyboard" },
         { "title": "Alt+Shift+Arrows", "subtitle": "Resize window", "icon": "keyboard" },
         { "title": "Alt+Ctrl+Arrows", "subtitle": "Move/reorder window", "icon": "keyboard" },

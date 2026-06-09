@@ -7,7 +7,8 @@
 3. Change one tool at a time.
 4. Reload only the affected tool.
 5. Run `./scripts/check-drift.sh`.
-6. Commit with a conventional commit message.
+6. Run `./scripts/verify.sh` when scripts, JSON, or launcher code changed.
+7. Commit with a conventional commit message.
 
 Do not run `./scripts/apply.sh` as a routine reload. It applies multiple managed config trees to live paths. Prefer targeted reloads while iterating.
 
@@ -28,6 +29,8 @@ open 'swiftbar://refreshallplugins'
 | Menu-bar workspace strip | SwiftBar | `configs/swiftbar/plugins/00-hackermacui.3s.sh` | `open 'swiftbar://refreshallplugins'` |
 | Focus border | JankyBorders | `configs/borders/bordersrc` | `~/.config/borders/bordersrc` |
 | Terminal feel | Ghostty | `configs/ghostty/config` | restart Ghostty windows |
+| Templates/profiles | Repo scripts | `configs/templates/profiles/`, `scripts/template.sh` | `scripts/template.sh switch <profile> --reload` |
+| Launcher login item | LaunchAgent script | `scripts/launcher-login.sh` | `scripts/launcher-login.sh install` |
 
 ## Borders Tuning
 

@@ -8,6 +8,8 @@
 - Native HackermacLauncher command center with declarative menus.
 - Compact SwiftBar AeroSpace workspace strip.
 - JankyBorders active-only focus border tuning.
+- Template profiles for public default and machine-specific monitor layouts.
+- Local app-bundle build flow for HackermacLauncher.
 
 ## Next widgets
 
@@ -18,9 +20,9 @@
 
 ## Omarchy-inspired improvements
 
-- Package HackermacLauncher as a real `.app` and add launch-at-login.
+- Add launch-at-login for the generated HackermacLauncher `.app`.
 - Make launcher hotkey configurable instead of hardcoded to `Option+Space`.
 - State file and checksum drift detection.
 - Reversible backups before apply.
-- Optional named workspace profile.
+- Expand templates beyond monitor/layout profiles when the contract is stable.
 - Dev session bootstrap for tmux/lazygit/opencode/Codex workflows.

@@ -3,5 +3,9 @@
   "cornerRadius": 28,
   "accentColor": "orange",
   "width": 720,
-  "maxRows": 8
+  "maxRows": 8,
+  "hotKey": {
+    "key": "space",
+    "modifiers": ["option"]
+  }
 }

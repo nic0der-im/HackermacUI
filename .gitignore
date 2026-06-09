@@ -4,6 +4,9 @@
 .LSOverride
 Icon?
 
+# Editor metadata
+.idea/
+
 # Local/private runtime state
 snapshots/
 private/

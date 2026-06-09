@@ -195,8 +195,8 @@ final class LauncherController: ObservableObject {
 
         let hotKeyID = EventHotKeyID(signature: OSType(0x484d4c48), id: 1) // HMLH
         RegisterEventHotKey(
-            UInt32(kVK_Space),
-            UInt32(optionKey),
+            theme.hotKey.keyCode,
+            theme.hotKey.carbonModifiers,
             hotKeyID,
             GetApplicationEventTarget(),
             0,
@@ -308,7 +308,7 @@ struct LauncherView: View {
                     .font(.system(size: 14, weight: .semibold, design: .rounded))
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text("Option Space")
+                Text(controller.theme.hotKey.displayName)
                     .font(.system(size: 11, weight: .medium, design: .monospaced))
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 10)
@@ -500,8 +500,108 @@ struct LauncherTheme: Decodable {
     let accentColor: String
     let width: CGFloat
     let maxRows: Int
+    let hotKey: LauncherHotKey
 
-    static let fallback = LauncherTheme(material: "hudWindow", cornerRadius: 28, accentColor: "orange", width: 720, maxRows: 8)
+    static let fallback = LauncherTheme(
+        material: "hudWindow",
+        cornerRadius: 28,
+        accentColor: "orange",
+        width: 720,
+        maxRows: 8,
+        hotKey: .fallback
+    )
+
+    enum CodingKeys: String, CodingKey {
+        case material, cornerRadius, accentColor, width, maxRows, hotKey
+    }
+
+    init(material: String, cornerRadius: CGFloat, accentColor: String, width: CGFloat, maxRows: Int, hotKey: LauncherHotKey) {
+        self.material = material
+        self.cornerRadius = cornerRadius
+        self.accentColor = accentColor
+        self.width = width
+        self.maxRows = maxRows
+        self.hotKey = hotKey
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        material = try container.decode(String.self, forKey: .material)
+        cornerRadius = try container.decode(CGFloat.self, forKey: .cornerRadius)
+        accentColor = try container.decode(String.self, forKey: .accentColor)
+        width = try container.decode(CGFloat.self, forKey: .width)
+        maxRows = try container.decode(Int.self, forKey: .maxRows)
+        hotKey = try container.decodeIfPresent(LauncherHotKey.self, forKey: .hotKey) ?? .fallback
+    }
+}
+
+struct LauncherHotKey: Decodable {
+    let key: String
+    let modifiers: [String]
+
+    static let fallback = LauncherHotKey(key: "space", modifiers: ["option"])
+
+    var displayName: String {
+        let names = modifiers.map { modifier in
+            switch modifier.lowercased() {
+            case "option", "alt": "Option"
+            case "control", "ctrl": "Control"
+            case "shift": "Shift"
+            case "command", "cmd", "super": "Command"
+            default: modifier.capitalized
+            }
+        }
+        return (names + [keyDisplayName]).joined(separator: " ")
+    }
+
+    var keyCode: UInt32 {
+        switch key.lowercased() {
+        case "space": UInt32(kVK_Space)
+        case "a": UInt32(kVK_ANSI_A)
+        case "b": UInt32(kVK_ANSI_B)
+        case "c": UInt32(kVK_ANSI_C)
+        case "d": UInt32(kVK_ANSI_D)
+        case "e": UInt32(kVK_ANSI_E)
+        case "f": UInt32(kVK_ANSI_F)
+        case "g": UInt32(kVK_ANSI_G)
+        case "h": UInt32(kVK_ANSI_H)
+        case "i": UInt32(kVK_ANSI_I)
+        case "j": UInt32(kVK_ANSI_J)
+        case "k": UInt32(kVK_ANSI_K)
+        case "l": UInt32(kVK_ANSI_L)
+        case "m": UInt32(kVK_ANSI_M)
+        case "n": UInt32(kVK_ANSI_N)
+        case "o": UInt32(kVK_ANSI_O)
+        case "p": UInt32(kVK_ANSI_P)
+        case "q": UInt32(kVK_ANSI_Q)
+        case "r": UInt32(kVK_ANSI_R)
+        case "s": UInt32(kVK_ANSI_S)
+        case "t": UInt32(kVK_ANSI_T)
+        case "u": UInt32(kVK_ANSI_U)
+        case "v": UInt32(kVK_ANSI_V)
+        case "w": UInt32(kVK_ANSI_W)
+        case "x": UInt32(kVK_ANSI_X)
+        case "y": UInt32(kVK_ANSI_Y)
+        case "z": UInt32(kVK_ANSI_Z)
+        default: UInt32(kVK_Space)
+        }
+    }
+
+    var carbonModifiers: UInt32 {
+        modifiers.reduce(UInt32(0)) { result, modifier in
+            switch modifier.lowercased() {
+            case "option", "alt": result | UInt32(optionKey)
+            case "control", "ctrl": result | UInt32(controlKey)
+            case "shift": result | UInt32(shiftKey)
+            case "command", "cmd", "super": result | UInt32(cmdKey)
+            default: result
+            }
+        }
+    }
+
+    private var keyDisplayName: String {
+        key.lowercased() == "space" ? "Space" : key.uppercased()
+    }
 }
 
 extension String {

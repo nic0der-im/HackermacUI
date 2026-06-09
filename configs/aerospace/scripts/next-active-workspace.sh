@@ -2,6 +2,14 @@
 set -euo pipefail
 
 AEROSPACE="${AEROSPACE:-/opt/homebrew/bin/aerospace}"
+PROFILE_ENV="${HACKERMACUI_PROFILE_ENV:-$HOME/.config/aerospace/scripts/profile.env}"
+
+if [[ -f "$PROFILE_ENV" ]]; then
+  # shellcheck disable=SC1090
+  source "$PROFILE_ENV"
+fi
+
+WORKSPACES="${HACKERMACUI_WORKSPACES:-1 2 3 4}"
 
 if [[ ! -x "$AEROSPACE" ]]; then
   AEROSPACE="$(command -v aerospace || true)"
@@ -17,7 +25,13 @@ if [[ -z "$focused" ]]; then
 fi
 
 active_workspaces="$($AEROSPACE list-windows --all --format '%{workspace}' 2>/dev/null \
-  | awk '/^[1-6]$/ && !seen[$0]++ { print }' \
+  | awk -v workspaces="$WORKSPACES" '
+      BEGIN {
+        split(workspaces, allowed, " ")
+        for (i in allowed) valid[allowed[i]] = 1
+      }
+      valid[$0] && !seen[$0]++ { print }
+    ' \
   | sort -n || true)"
 
 count="$(printf '%s\n' "$active_workspaces" | sed '/^$/d' | wc -l | tr -d ' ')"
@@ -26,7 +40,7 @@ if [[ "$count" -le 1 ]]; then
 fi
 
 next=""
-if [[ "$focused" =~ ^[1-6]$ ]]; then
+if printf '%s\n' $WORKSPACES | grep -qx "$focused"; then
   while IFS= read -r workspace; do
     [[ -z "$workspace" ]] && continue
     if [[ "$workspace" -gt "$focused" ]]; then

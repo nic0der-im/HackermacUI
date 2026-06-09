@@ -12,6 +12,7 @@
 | Workspace indicator | SwiftBar plugin | `00-hackermacui.3s.sh` renders AeroSpace workspaces and compact app hints in the real macOS menu bar. |
 | Window focus border | JankyBorders | Active border only; inactive border is transparent to avoid dark outer halos. |
 | Terminal UI | Ghostty | Glass-style terminal config. |
+| Templates/profiles | Repo scripts | `scripts/template.sh` renders selected profile files into active config. |
 
 ## Expected runtime
 
@@ -30,6 +31,7 @@ borders
 | `Cmd+Shift+A` opens OpenCode CLI | AeroSpace + Ghostty | Direct fast path for agent work; the full Agents menu stays in HackermacLauncher. |
 | HackermacLauncher stays floating and borderless | AeroSpace + JankyBorders | Command center panels should not be tiled or visually framed as app windows. |
 | SwiftBar workspace strip has only maintenance dropdown links | SwiftBar | The menu bar remains a compact status surface; command-center workflows stay in HackermacLauncher. |
+| Public default uses four workspaces | AeroSpace profile | Machine-specific monitor names stay in explicit templates such as `ignacio-dual-lg`. |
 | Raycast is absent | HackermacLauncher | Native launcher replaced Raycast after the menu shape was validated. |
 
 ## Intentionally absent

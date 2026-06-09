@@ -53,6 +53,7 @@ Repo configs
   -> scripts/backup.sh protects live state
   -> scripts/apply.sh syncs managed dotfiles after review
   -> scripts/check-drift.sh compares live config against repo source
+  -> scripts/template.sh swaps selected profile templates
 ```
 
 The important design constraint is ownership. AeroSpace is the window manager. SwiftBar is not a second command center. HackermacLauncher is not a status bar. JankyBorders does not manage windows. Ghostty does not define global desktop behavior.
@@ -61,7 +62,7 @@ The important design constraint is ownership. AeroSpace is the window manager. S
 
 | Layer | Project | Role in HackermacUI |
 |---|---|---|
-| Tiling and workspaces | AeroSpace | Manages six persistent workspaces, keyboard focus, window movement, gaps, floating rules, and app launcher shortcuts. |
+| Tiling and workspaces | AeroSpace | Manages public four-workspace default plus swappable profile templates, keyboard focus, movement, gaps, floating rules, and app launcher shortcuts. |
 | Command center | HackermacLauncher | Native Swift launcher for menus, workspace actions, app opening, install helpers, config shortcuts, and Ghostty entrypoints. |
 | Menu-bar widgets | SwiftBar | Hosts the native workspace strip plugin in the real macOS menu bar. |
 | Workspace widget | `00-hackermacui.3s.sh` | Custom SwiftBar plugin that renders a compact workspace strip from AeroSpace state. |
@@ -74,7 +75,7 @@ The important design constraint is ownership. AeroSpace is the window manager. S
 
 ### AeroSpace
 
-AeroSpace is the core tiling window manager. HackermacUI uses it for workspaces `1..6`, directional focus, resize, movement, floating toggles, app launch shortcuts, and workspace-change hooks.
+AeroSpace is the core tiling window manager. HackermacUI uses it for public workspaces `1..4`, directional focus, resize, movement, floating toggles, app launch shortcuts, and workspace-change hooks. Machine-specific layouts live in templates.
 
 Repo-owned files:
 
@@ -84,14 +85,15 @@ Repo-owned files:
 | `configs/aerospace/scripts/next-active-workspace.sh` | Switches to the next workspace that currently has windows. |
 | `configs/aerospace/scripts/refresh-swiftbar-workspaces.sh` | Debounced bridge from AeroSpace workspace events to SwiftBar refreshes. |
 | `configs/aerospace/scripts/finder-new-window` | Opens Finder as a new window from an AeroSpace shortcut. |
+| `configs/aerospace/scripts/profile.env` | Active profile metadata consumed by helper scripts and widgets. |
 
 Key behavior:
 
 | Behavior | Current state |
 |---|---|
-| Workspace count | Six persistent workspaces. |
-| Main switching | `Alt+1..6`. |
-| Move focused window | `Alt+Ctrl+1..6`. |
+| Workspace count | Four persistent workspaces in the public default profile. |
+| Main switching | `Alt+1..4`. |
+| Move focused window | `Alt+Ctrl+1..4`. |
 | Focus movement | `Alt+Arrow`. |
 | Resize | `Alt+Shift+Arrow`. |
 | Floating toggle | `Alt+Shift+Space`. |
@@ -199,7 +201,7 @@ Repo-owned files:
 | `apps/HackermacLauncher/Sources/HackermacLauncher/main.swift` | App entrypoint, panel UI, fuzzy filtering, hotkey registration, config loading, and action runner. |
 | `apps/HackermacLauncher/README.md` | Launcher-specific run and config notes. |
 | `configs/launcher/menu.json` | Menu tree and declarative actions. |
-| `configs/launcher/theme.json` | Material, width, accent color, radius, and max-row tuning. |
+| `configs/launcher/theme.json` | Material, width, accent color, radius, max-row tuning, and hotkey. |
 
 Current menu areas:
 
@@ -209,6 +211,7 @@ Current menu areas:
 | TUIs | Opens LazyGit, LazyDocker, btop, and Fastfetch in Ghostty. |
 | Gamemode | Moves to the gaming workspace, opens Steam, Discord, and Focus settings. |
 | Switch | Switches AeroSpace workspaces and runs workspace utility actions. |
+| Profiles | Swaps public/default and machine-specific templates. |
 | Install | Guarded Homebrew installers for optional terminal tools. |
 | Config | Opens repo-managed config files and folders. |
 | Terminal | Opens Ghostty, repo shells, tmux session, and status checks. |
@@ -280,6 +283,7 @@ Core behavior:
 | Ghostty | `~/.config/ghostty/` | `configs/ghostty/` | `rsync --delete`. |
 | Launcher menu | Repo-read config | `configs/launcher/menu.json` | Read by HackermacLauncher. |
 | Launcher theme | Repo-read config | `configs/launcher/theme.json` | Read by HackermacLauncher. |
+| Template profiles | Repo-rendered config | `configs/templates/profiles/` | Rendered by `scripts/template.sh`. |
 | zsh example | Manual copy | `configs/zsh/zshrc.example` | Not applied automatically. |
 
 `apply.sh` is intentionally powerful. It creates a backup first, then syncs managed folders into live paths. Because several sync steps use delete semantics, review the configs before applying them.
@@ -296,9 +300,12 @@ configs/
   ghostty/                 Terminal theme and keybindings.
   launcher/                HackermacLauncher menu and theme JSON.
   swiftbar/                SwiftBar plugin and widget docs.
+  templates/               Profile templates for public and machine-specific layouts.
   zsh/                     Portable zsh example.
 
 docs/
+  contracts.md             APIs and extension contracts.
+  templates.md             Profile/template switching model.
   install.md               Install and safe apply path.
   stack.md                 Runtime ownership and absent competing tools.
   widgets.md               SwiftBar widget contract.
@@ -309,6 +316,11 @@ docs/
   timeline.md              Project evolution notes.
 
 scripts/
+  bootstrap.sh             Safe curl/bootstrap entrypoint.
+  install-deps.sh          Guarded Homebrew dependency installer.
+  template.sh              Render/switch profile templates.
+  build-launcher-app.sh    Build local HackermacLauncher.app.
+  verify.sh                Shell, JSON, and Swift verification.
   status.sh                Read current desktop-management state.
   doctor.sh                Verify required apps, CLIs, and macOS settings.
   backup.sh                Copy live configs to a timestamped local backup.
@@ -340,6 +352,7 @@ Use the guarded repo workflow:
 ./scripts/doctor.sh
 ./scripts/backup.sh
 ./scripts/check-drift.sh
+./scripts/verify.sh
 # Review configs before this step.
 ./scripts/apply.sh
 ```
@@ -353,6 +366,10 @@ After applying, open AeroSpace and SwiftBar once so macOS can grant any required
 ./scripts/doctor.sh       # verify required apps, CLIs, and macOS settings
 ./scripts/backup.sh       # copy live configs to ~/.hackermacui/backups/<timestamp>
 ./scripts/check-drift.sh  # compare live configs against repo snapshots
+./scripts/template.sh     # list, render, and switch profile templates
+./scripts/verify.sh       # verify shell, JSON, and Swift build
+./scripts/build-launcher-app.sh # build dist/HackermacLauncher.app
+./scripts/launcher-login.sh # install/remove Launcher launch-at-login
 ./scripts/snapshot.sh     # private local snapshot, ignored by git
 ./scripts/apply.sh        # apply repo configs to the live machine after review
 ```
@@ -395,8 +412,8 @@ Local backups and snapshots belong under `~/.hackermacui/` or ignored paths.
 
 | Area | State |
 |---|---|
-| AeroSpace desktop config | Active six-workspace baseline. |
-| HackermacLauncher | SwiftPM runtime flow; packaging as a signed `.app` is future work. |
+| AeroSpace desktop config | Public four-workspace default plus swappable profile templates. |
+| HackermacLauncher | SwiftPM runtime flow plus local `.app` bundle build under `dist/`. |
 | SwiftBar workspace strip | Implemented with cached composite image rendering. |
 | JankyBorders | Active focus border with launcher/system blacklist. |
 | Ghostty | Glass terminal config with developer keybindings. |
