@@ -126,7 +126,7 @@ persistent-workspaces = ['1', '2', '3', '4', '5', '6']
     # App launchers.
     cmd-enter = 'exec-and-forget open -na Ghostty'
     cmd-b = 'exec-and-forget open -na "Google Chrome"'
-    cmd-f = 'exec-and-forget /bin/bash -lc "$HOME/.config/aerospace/scripts/finder-new-window"'
+    cmd-shift-f = 'exec-and-forget /bin/bash -lc "$HOME/.config/aerospace/scripts/finder-new-window"'
     cmd-o = 'exec-and-forget open -na Obsidian'
     cmd-d = 'exec-and-forget /bin/bash -lc "open -na Ghostty --args -e lazydocker"'
 

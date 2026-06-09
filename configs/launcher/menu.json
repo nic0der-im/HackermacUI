@@ -62,6 +62,12 @@
       ]
     },
     {
+      "title": "Restart Launcher",
+      "subtitle": "Close and reopen HackermacLauncher",
+      "icon": "arrow.clockwise.circle",
+      "action": { "type": "run", "command": "${repo}/scripts/restart-launcher.sh" }
+    },
+    {
       "title": "Terminal",
       "subtitle": "Ghostty entrypoints",
       "icon": "terminal",
@@ -89,14 +95,20 @@
       "items": [
         { "title": "Cmd+Enter", "subtitle": "Open Ghostty", "icon": "keyboard" },
         { "title": "Cmd+B", "subtitle": "Open Google Chrome", "icon": "keyboard" },
-        { "title": "Cmd+F", "subtitle": "Open Finder window", "icon": "keyboard" },
+        { "title": "Cmd+Shift+F", "subtitle": "Open Finder window", "icon": "keyboard" },
         { "title": "Cmd+O", "subtitle": "Open Obsidian", "icon": "keyboard" },
         { "title": "Cmd+D", "subtitle": "Open LazyDocker", "icon": "keyboard" },
         { "title": "Alt+1..6", "subtitle": "Switch workspace", "icon": "keyboard" },
         { "title": "Alt+Ctrl+1..6", "subtitle": "Move focused window to workspace", "icon": "keyboard" },
         { "title": "Alt+Arrows", "subtitle": "Focus windows", "icon": "keyboard" },
+        { "title": "Alt+Shift+Arrows", "subtitle": "Resize window", "icon": "keyboard" },
+        { "title": "Alt+Ctrl+Arrows", "subtitle": "Move/reorder window", "icon": "keyboard" },
+        { "title": "Alt+Shift+F", "subtitle": "Toggle fullscreen", "icon": "keyboard" },
         { "title": "Alt+Shift+Space", "subtitle": "Toggle floating/tiling", "icon": "keyboard" },
-        { "title": "Alt+Tab", "subtitle": "Next active workspace", "icon": "keyboard" }
+        { "title": "Alt+/", "subtitle": "Layout tiles horizontal vertical", "icon": "keyboard" },
+        { "title": "Alt+,", "subtitle": "Layout accordion horizontal vertical", "icon": "keyboard" },
+        { "title": "Alt+Tab", "subtitle": "Next active workspace", "icon": "keyboard" },
+        { "title": "Alt+Shift+;", "subtitle": "Enter service mode", "icon": "keyboard" }
       ]
     }
   ]
