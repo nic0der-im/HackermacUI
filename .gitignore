@@ -25,6 +25,8 @@ backups/
 *.log
 *.tmp
 .cache/
+.atl/
 node_modules/
 dist/
 build/
+.build/

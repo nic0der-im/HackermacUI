@@ -14,7 +14,16 @@ copy_if_exists() {
   fi
 }
 
-copy_if_exists "$HOME/.aerospace.toml" "$BACKUP_DIR/aerospace.toml"
+copy_file_if_exists() {
+  local src="$1"
+  local dest="$2"
+  if [[ -e "$src" ]]; then
+    mkdir -p "$(dirname "$dest")"
+    cp -L "$src" "$dest"
+  fi
+}
+
+copy_file_if_exists "$HOME/.aerospace.toml" "$BACKUP_DIR/aerospace.toml"
 copy_if_exists "$HOME/SwiftBarPlugins/" "$BACKUP_DIR/SwiftBarPlugins/"
 copy_if_exists "$HOME/.config/borders/" "$BACKUP_DIR/borders/"
 copy_if_exists "$HOME/.config/ghostty/" "$BACKUP_DIR/ghostty/"

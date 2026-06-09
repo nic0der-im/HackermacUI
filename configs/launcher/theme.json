@@ -1,0 +1,7 @@
+{
+  "material": "hudWindow",
+  "cornerRadius": 28,
+  "accentColor": "orange",
+  "width": 720,
+  "maxRows": 8
+}

@@ -1,0 +1,103 @@
+{
+  "title": "HackermacUI",
+  "items": [
+    {
+      "title": "TUIs",
+      "subtitle": "Terminal tools in Ghostty",
+      "icon": "terminal",
+      "items": [
+        { "title": "LazyGit", "subtitle": "Git TUI in repo", "icon": "terminal", "action": { "type": "ghostty", "command": "lazygit", "cwd": "${repo}" } },
+        { "title": "LazyDocker", "subtitle": "Docker TUI", "icon": "shippingbox", "action": { "type": "ghostty", "command": "lazydocker", "cwd": "${repo}" } },
+        { "title": "btop", "subtitle": "System monitor", "icon": "gauge", "action": { "type": "ghostty", "command": "btop" } },
+        { "title": "Fastfetch", "subtitle": "System summary", "icon": "info.circle", "action": { "type": "ghostty", "command": "fastfetch; exec zsh" } }
+      ]
+    },
+    {
+      "title": "Gamemode",
+      "subtitle": "Gaming workspace helpers",
+      "icon": "gamecontroller",
+      "items": [
+        { "title": "Open Steam Workspace", "subtitle": "Workspace 3 + Steam", "icon": "gamecontroller", "action": { "type": "sequence", "actions": [{ "type": "aerospace", "args": ["workspace", "3"] }, { "type": "openApp", "name": "Steam" }] } },
+        { "title": "Open Discord", "subtitle": "Voice/chat companion", "icon": "message", "action": { "type": "openApp", "name": "Discord" } },
+        { "title": "Focus Settings", "subtitle": "macOS Focus modes", "icon": "moon", "action": { "type": "openURL", "url": "x-apple.systempreferences:com.apple.Focus-Settings.extension" } }
+      ]
+    },
+    {
+      "title": "Switch",
+      "subtitle": "AeroSpace workspace actions",
+      "icon": "arrow.right",
+      "items": [
+        { "title": "Workspace 1", "icon": "1.circle", "action": { "type": "aerospace", "args": ["workspace", "1"] } },
+        { "title": "Workspace 2", "icon": "2.circle", "action": { "type": "aerospace", "args": ["workspace", "2"] } },
+        { "title": "Workspace 3", "icon": "3.circle", "action": { "type": "aerospace", "args": ["workspace", "3"] } },
+        { "title": "Workspace 4", "icon": "4.circle", "action": { "type": "aerospace", "args": ["workspace", "4"] } },
+        { "title": "Workspace 5", "icon": "5.circle", "action": { "type": "aerospace", "args": ["workspace", "5"] } },
+        { "title": "Workspace 6", "icon": "6.circle", "action": { "type": "aerospace", "args": ["workspace", "6"] } },
+        { "title": "Next Active Workspace", "subtitle": "HackermacUI active workspace switcher", "icon": "arrow.clockwise", "action": { "type": "run", "command": "${repo}/configs/aerospace/scripts/next-active-workspace.sh" } },
+        { "title": "Balance Sizes", "subtitle": "AeroSpace balance-sizes", "icon": "square.grid.2x2", "action": { "type": "aerospace", "args": ["balance-sizes"] } }
+      ]
+    },
+    {
+      "title": "Install",
+      "subtitle": "Guarded Homebrew installers",
+      "icon": "arrow.down.circle",
+      "items": [
+        { "title": "LazyGit", "icon": "terminal", "confirm": true, "action": { "type": "ghostty", "command": "brew install lazygit" } },
+        { "title": "LazyDocker", "icon": "shippingbox", "confirm": true, "action": { "type": "ghostty", "command": "brew install lazydocker" } },
+        { "title": "btop", "icon": "gauge", "confirm": true, "action": { "type": "ghostty", "command": "brew install btop" } },
+        { "title": "Fastfetch", "icon": "info.circle", "confirm": true, "action": { "type": "ghostty", "command": "brew install fastfetch" } }
+      ]
+    },
+    {
+      "title": "Config",
+      "subtitle": "Open managed configs",
+      "icon": "gearshape",
+      "items": [
+        { "title": "HackermacUI Repo", "icon": "folder", "action": { "type": "openPath", "path": "${repo}" } },
+        { "title": "AeroSpace Config", "icon": "macwindow", "action": { "type": "openPath", "path": "${repo}/configs/aerospace/aerospace.toml" } },
+        { "title": "Ghostty Config", "icon": "terminal", "action": { "type": "openPath", "path": "${repo}/configs/ghostty/config" } },
+        { "title": "SwiftBar Plugins", "icon": "menubar.rectangle", "action": { "type": "openPath", "path": "${repo}/configs/swiftbar/plugins" } },
+        { "title": "Borders Config", "icon": "rectangle", "action": { "type": "openPath", "path": "${repo}/configs/borders/bordersrc" } },
+        { "title": "Launcher Menu JSON", "icon": "curlybraces", "action": { "type": "openPath", "path": "${repo}/configs/launcher/menu.json" } }
+      ]
+    },
+    {
+      "title": "Terminal",
+      "subtitle": "Ghostty entrypoints",
+      "icon": "terminal",
+      "items": [
+        { "title": "Open Ghostty", "icon": "terminal", "action": { "type": "openApp", "name": "Ghostty" } },
+        { "title": "Repo Shell", "subtitle": "zsh in HackermacUI", "icon": "terminal", "action": { "type": "ghostty", "command": "exec zsh", "cwd": "${repo}" } },
+        { "title": "Tmux Session", "subtitle": "tmux new-session -A -s hackermacui", "icon": "rectangle.split.3x1", "action": { "type": "ghostty", "command": "tmux new-session -A -s hackermacui", "cwd": "${repo}" } },
+        { "title": "Status", "subtitle": "Run scripts/status.sh", "icon": "checklist", "action": { "type": "ghostty", "command": "./scripts/status.sh; exec zsh", "cwd": "${repo}" } }
+      ]
+    },
+    {
+      "title": "Theme",
+      "subtitle": "Safe visual toggles",
+      "icon": "paintbrush",
+      "items": [
+        { "title": "Toggle macOS Appearance", "icon": "circle.lefthalf.filled", "action": { "type": "appleScript", "script": "tell application \"System Events\" to tell appearance preferences to set dark mode to not dark mode" } },
+        { "title": "Reload Borders", "icon": "rectangle", "action": { "type": "run", "command": "${repo}/configs/borders/bordersrc" } },
+        { "title": "Refresh SwiftBar", "icon": "arrow.clockwise", "action": { "type": "openURL", "url": "swiftbar://refreshallplugins" } }
+      ]
+    },
+    {
+      "title": "Keybindings",
+      "subtitle": "Searchable help map",
+      "icon": "keyboard",
+      "items": [
+        { "title": "Cmd+Enter", "subtitle": "Open Ghostty", "icon": "keyboard" },
+        { "title": "Cmd+B", "subtitle": "Open Google Chrome", "icon": "keyboard" },
+        { "title": "Cmd+F", "subtitle": "Open Finder window", "icon": "keyboard" },
+        { "title": "Cmd+O", "subtitle": "Open Obsidian", "icon": "keyboard" },
+        { "title": "Cmd+D", "subtitle": "Open LazyDocker", "icon": "keyboard" },
+        { "title": "Alt+1..6", "subtitle": "Switch workspace", "icon": "keyboard" },
+        { "title": "Alt+Ctrl+1..6", "subtitle": "Move focused window to workspace", "icon": "keyboard" },
+        { "title": "Alt+Arrows", "subtitle": "Focus windows", "icon": "keyboard" },
+        { "title": "Alt+Shift+Space", "subtitle": "Toggle floating/tiling", "icon": "keyboard" },
+        { "title": "Alt+Tab", "subtitle": "Next active workspace", "icon": "keyboard" }
+      ]
+    }
+  ]
+}

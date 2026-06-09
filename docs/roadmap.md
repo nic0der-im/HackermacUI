@@ -5,6 +5,9 @@
 - Public-safe repository history.
 - AeroSpace + SwiftBar + borders + Ghostty configs.
 - Doctor, backup, status, drift, apply, and snapshot scripts.
+- Native HackermacLauncher command center with declarative menus.
+- Compact SwiftBar AeroSpace workspace strip.
+- JankyBorders active-only focus border tuning.
 
 ## Next widgets
 
@@ -13,8 +16,10 @@
 3. Obsidian quick actions.
 4. Calendar next event, only if it beats the native Calendar menu.
 
-## Omachy-inspired improvements
+## Omarchy-inspired improvements
 
+- Package HackermacLauncher as a real `.app` and add launch-at-login.
+- Make launcher hotkey configurable instead of hardcoded to `Option+Space`.
 - State file and checksum drift detection.
 - Reversible backups before apply.
 - Optional named workspace profile.

@@ -7,16 +7,32 @@ case ":$PATH:" in
   *) export PATH="$PNPM_HOME/bin:$PATH" ;;
 esac
 
-if command -v atuin >/dev/null 2>&1; then
+# Omarchy-like navigation: make `cd project-name` use zoxide's smart index.
+# Use `builtin cd path` when you explicitly need vanilla zsh cd behavior.
+if [[ -o interactive ]] && command -v zoxide >/dev/null 2>&1; then
+  eval "$(zoxide init zsh --cmd cd)"
+fi
+
+# Atuin replaces fragile shell history with searchable, persistent history.
+if [[ -o interactive ]] && command -v atuin >/dev/null 2>&1; then
   eval "$(atuin init zsh)"
 fi
 
-if command -v zoxide >/dev/null 2>&1; then
-  eval "$(zoxide init zsh)"
+# fzf adds fuzzy file/history helpers. Keep it after history/navigation tools.
+if [[ -o interactive ]] && command -v fzf >/dev/null 2>&1; then
+  # fzf's generated zsh scripts can warn in non-TTY validation shells; real
+  # Ghostty sessions still get completion and keybindings normally.
+  if [[ -o zle && -r /opt/homebrew/opt/fzf/shell/completion.zsh ]]; then
+    source /opt/homebrew/opt/fzf/shell/completion.zsh 2>/dev/null
+  fi
+  if [[ -o zle && -r /opt/homebrew/opt/fzf/shell/key-bindings.zsh ]]; then
+    source /opt/homebrew/opt/fzf/shell/key-bindings.zsh 2>/dev/null
+  fi
 fi
 
-if command -v fzf >/dev/null 2>&1; then
-  eval "$(fzf --zsh)"
+# Starship is optional but gives a portable prompt when installed.
+if [[ -o interactive ]] && command -v starship >/dev/null 2>&1; then
+  eval "$(starship init zsh)"
 fi
 
 if [[ -r /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
@@ -31,3 +47,25 @@ alias d='docker'
 alias dc='docker compose'
 alias lg='lazygit'
 alias ld='lazydocker'
+
+if command -v eza >/dev/null 2>&1; then
+  alias ls='eza --icons=auto --group-directories-first'
+  alias ll='eza -lah --icons=auto --group-directories-first --git'
+  alias tree='eza --tree --icons=auto --group-directories-first'
+else
+  alias ll='ls -lah'
+fi
+
+if command -v bat >/dev/null 2>&1; then
+  alias cat='bat --paging=never'
+fi
+
+# Show a compact system summary when opening a real interactive terminal.
+# Set HACKERMACUI_FASTFETCH=0 to disable it for a session.
+if [[ -o interactive && -t 1 && "${HACKERMACUI_FASTFETCH:-1}" != "0" ]] && command -v fastfetch >/dev/null 2>&1; then
+  fastfetch \
+    --logo macos \
+    --structure Title:OS:Host:Uptime:Shell:Terminal:CPU:Memory:Disk \
+    --key-type string \
+    --show-errors false
+fi

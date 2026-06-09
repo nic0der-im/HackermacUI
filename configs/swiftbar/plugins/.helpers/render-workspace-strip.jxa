@@ -1,0 +1,164 @@
+ObjC.import('AppKit')
+ObjC.import('Foundation')
+
+function readFile(path) {
+  const data = $.NSData.dataWithContentsOfFile(path)
+  if (!data) return ''
+  return ObjC.unwrap($.NSString.alloc.initWithDataEncoding(data, $.NSUTF8StringEncoding))
+}
+
+function color(hex, alpha) {
+  const clean = hex.replace('#', '')
+  const r = parseInt(clean.slice(0, 2), 16) / 255
+  const g = parseInt(clean.slice(2, 4), 16) / 255
+  const b = parseInt(clean.slice(4, 6), 16) / 255
+  return $.NSColor.colorWithCalibratedRedGreenBlueAlpha(r, g, b, alpha)
+}
+
+function attrs(font, fg) {
+  const dict = $.NSMutableDictionary.dictionary
+  dict.setObjectForKey(font, $.NSFontAttributeName)
+  dict.setObjectForKey(fg, $.NSForegroundColorAttributeName)
+  return dict
+}
+
+function textWidth(text, attributes) {
+  return $(text).sizeWithAttributes(attributes).width
+}
+
+function drawText(text, x, y, attributes) {
+  $(text).drawAtPointWithAttributes($.NSMakePoint(x, y), attributes)
+}
+
+function drawRoundedRect(x, y, w, h, radius, fill, stroke, strokeWidth) {
+  const rect = $.NSMakeRect(x, y, w, h)
+  const path = $.NSBezierPath.bezierPathWithRoundedRectXRadiusYRadius(rect, radius, radius)
+  fill.setFill
+  path.fill
+  if (strokeWidth > 0) {
+    stroke.setStroke
+    path.setLineWidth(strokeWidth)
+    path.stroke
+  }
+}
+
+function parseState(path) {
+  const rows = readFile(path).split('\n').filter(Boolean)
+  const workspaces = []
+  let current = null
+
+  rows.forEach((row) => {
+    const parts = row.split('\t')
+    const ws = parts[0] || ''
+    const focused = parts[1] === '1'
+    const app = parts[2] || ''
+    const icon = parts[3] || ''
+
+    if (!current || current.name !== ws) {
+      current = { name: ws, focused, apps: [] }
+      workspaces.push(current)
+    }
+
+    if (app !== '') current.apps.push({ name: app, icon })
+  })
+
+  return workspaces
+}
+
+function main(argv) {
+  const statePath = argv[0]
+  const outPath = argv[1]
+  const emptyLabel = argv[2] || ''
+  const workspaces = parseState(statePath)
+
+  const scale = 1
+  const height = 32
+  const padX = 0
+  const gap = 4
+  const iconSize = 21
+  const iconGap = 4
+  const labelGap = 6
+  const segmentPadX = 8
+  const segmentPadY = 3
+  const textY = 9
+  const iconY = 5
+  const font = $.NSFont.fontWithNameSize('Menlo', 12) || $.NSFont.monospacedSystemFontOfSizeWeight(12, $.NSFontWeightMedium)
+  const activeFont = $.NSFont.fontWithNameSize('Menlo-Bold', 12) || font
+  const fg = color('#E6EDF3', 1)
+  const muted = color('#8A8F98', 1)
+  const active = color('#82FB9C', 1)
+  const activeFill = color('#102A18', 0.72)
+  const occupiedFill = color('#151A20', 0.62)
+  const emptyFill = color('#0B0F14', 0.45)
+  const separator = color('#3A414A', 1)
+  const normalAttrs = attrs(font, fg)
+  const activeAttrs = attrs(activeFont, active)
+  const mutedAttrs = attrs(font, muted)
+
+  const segments = workspaces.map((workspace) => {
+    const textAttributes = workspace.focused ? activeAttrs : normalAttrs
+    const label = workspace.name
+    let width = segmentPadX * 2 + textWidth(label, textAttributes) + labelGap
+    if (workspace.apps.length === 0) {
+      width += textWidth(emptyLabel, mutedAttrs)
+    } else {
+      width += Math.min(workspace.apps.length, 5) * iconSize + Math.max(0, Math.min(workspace.apps.length, 5) - 1) * iconGap
+    }
+    return { workspace, width: Math.ceil(width) }
+  })
+
+  const totalWidth = Math.ceil(padX * 2 + segments.reduce((sum, segment) => sum + segment.width, 0) + gap * Math.max(0, segments.length - 1))
+  const image = $.NSImage.alloc.initWithSize($.NSMakeSize(totalWidth * scale, height * scale))
+  image.lockFocus
+
+  const ctx = $.NSGraphicsContext.currentContext
+  ctx.saveGraphicsState
+  ctx.setImageInterpolation($.NSImageInterpolationHigh)
+  $.NSAffineTransform.transform.scaleBy(scale)
+
+  let x = padX
+  const y = segmentPadY
+  segments.forEach((segment, index) => {
+    const workspace = segment.workspace
+    const fill = workspace.focused ? activeFill : (workspace.apps.length > 0 ? occupiedFill : emptyFill)
+    const stroke = workspace.focused ? active : separator
+    drawRoundedRect(x, y, segment.width, height - segmentPadY * 2, 6, fill, stroke, workspace.focused ? 1.2 : 0.6)
+
+    let innerX = x + segmentPadX
+    const textAttributes = workspace.focused ? activeAttrs : normalAttrs
+    const label = workspace.name
+    drawText(label, innerX, textY, textAttributes)
+    innerX += textWidth(label, textAttributes) + labelGap
+
+    if (workspace.apps.length === 0) {
+      if (emptyLabel !== '') drawText(emptyLabel, innerX, textY, mutedAttrs)
+    } else {
+      workspace.apps.slice(0, 5).forEach((app) => {
+        const icon = app.icon ? $.NSImage.alloc.initWithContentsOfFile(app.icon) : null
+        if (icon) {
+          icon.drawInRectFromRectOperationFraction($.NSMakeRect(innerX, iconY, iconSize, iconSize), $.NSZeroRect, $.NSCompositingOperationSourceOver, 1)
+        } else {
+          drawText('•', innerX + 5, textY, mutedAttrs)
+        }
+        innerX += iconSize + iconGap
+      })
+    }
+
+    x += segment.width
+    if (index < segments.length - 1) {
+      x += gap
+    }
+  })
+
+  ctx.restoreGraphicsState
+  image.unlockFocus
+
+  const tiff = image.TIFFRepresentation
+  const rep = $.NSBitmapImageRep.imageRepWithData(tiff)
+  const png = rep.representationUsingTypeProperties($.NSBitmapImageFileTypePNG, $.NSDictionary.dictionary)
+  png.writeToFileAtomically(outPath, true)
+}
+
+function run(argv) {
+  main(argv)
+}

@@ -19,13 +19,22 @@ brew install lazygit lazydocker node pnpm go redis postgresql@16 postgresql@18 f
 brew install --cask orbstack
 ```
 
-## Apply
+## Safe Apply Path
+
+Start with read-only checks and a backup:
 
 ```bash
 ./scripts/doctor.sh
 ./scripts/backup.sh
+```
+
+Apply only after reviewing the repo configs you want to sync:
+
+```bash
 ./scripts/apply.sh
 ```
+
+`apply.sh` creates a backup first, then symlinks `~/.aerospace.toml`, syncs AeroSpace helper scripts, SwiftBar plugins, JankyBorders config, and Ghostty config into live paths. The sync steps use delete semantics for managed folders, so do not run it as a blind restore.
 
 ## macOS permissions
 
@@ -36,3 +45,14 @@ AeroSpace needs Accessibility permissions:
 3. Enable AeroSpace.
 
 SwiftBar should be allowed to run in the menu bar and at login if you want widgets always available.
+
+## Launcher
+
+HackermacLauncher is currently a SwiftPM app, not a packaged `.app` bundle:
+
+```bash
+cd apps/HackermacLauncher
+swift run HackermacLauncher
+```
+
+While running, it registers `Option+Space` and reads `configs/launcher/menu.json` plus `configs/launcher/theme.json` from the repo.

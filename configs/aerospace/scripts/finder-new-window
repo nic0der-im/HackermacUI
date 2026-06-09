@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+/usr/bin/osascript <<'APPLESCRIPT'
+tell application "Finder"
+  activate
+  make new Finder window
+end tell
+APPLESCRIPT
