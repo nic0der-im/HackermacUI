@@ -26,7 +26,7 @@ echo
 echo "== SwiftBar =="
 echo "PluginDirectory: ${PLUGIN_DIR:-not configured}"
 if [[ -n "$PLUGIN_DIR" && -d "$PLUGIN_DIR" ]]; then
-  find "$PLUGIN_DIR" -maxdepth 1 -type f -perm -111 -print | sed "s#^$PLUGIN_DIR/##" | sort
+  find -H "$PLUGIN_DIR" -maxdepth 1 -type f -perm -111 -print | sed "s#^$PLUGIN_DIR/##" | sort
 else
   echo "No plugin directory found"
 fi

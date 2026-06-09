@@ -6,12 +6,13 @@ PLUGIN_DIR="$HOME/SwiftBarPlugins"
 
 "$ROOT/scripts/backup.sh" >/dev/null
 
-mkdir -p "$PLUGIN_DIR" "$HOME/.config/aerospace/scripts" "$HOME/.config/borders" "$HOME/.config/ghostty"
+mkdir -p "$PLUGIN_DIR" "$HOME/.config/aerospace/scripts" "$HOME/.config/borders" "$HOME/.config/ghostty" "$HOME/.config/fastfetch"
 ln -sfn "$ROOT/configs/aerospace/aerospace.toml" "$HOME/.aerospace.toml"
 rsync -a --delete "$ROOT/configs/aerospace/scripts/" "$HOME/.config/aerospace/scripts/"
 rsync -a --delete "$ROOT/configs/swiftbar/plugins/" "$PLUGIN_DIR/"
 rsync -a --delete "$ROOT/configs/borders/" "$HOME/.config/borders/"
 rsync -a --delete "$ROOT/configs/ghostty/" "$HOME/.config/ghostty/"
+rsync -a --delete "$ROOT/configs/fastfetch/" "$HOME/.config/fastfetch/"
 
 defaults write com.ameba.SwiftBar PluginDirectory -string "$PLUGIN_DIR"
 defaults write com.ameba.SwiftBar HideSwiftBarIcon -bool true

@@ -6,6 +6,7 @@
 | SwiftBar plugins | `~/SwiftBarPlugins/` | `configs/swiftbar/plugins/` |
 | JankyBorders | `~/.config/borders/` | `configs/borders/` |
 | Ghostty | `~/.config/ghostty/` | `configs/ghostty/` |
+| Fastfetch | `~/.config/fastfetch/config.json` | `configs/fastfetch/config.json` |
 | HackermacLauncher menu | Native launcher config | `configs/launcher/menu.json` |
 | HackermacLauncher theme | Native launcher config | `configs/launcher/theme.json` |
 | zsh example | manual copy | `configs/zsh/zshrc.example` |
@@ -18,6 +19,7 @@
 | AeroSpace scripts | `configs/aerospace/scripts/` is synced to `~/.config/aerospace/scripts/` by `apply.sh`. |
 | SwiftBar plugins | `apply.sh` syncs `configs/swiftbar/plugins/` to `~/SwiftBarPlugins/` and may delete unmanaged files in that folder. |
 | JankyBorders | Inactive borders are transparent; launcher is blacklisted. |
+| Fastfetch | Shell startup calls plain `fastfetch`; the module list lives in the fastfetch config so the default logo stays intact. |
 
 ## Public repo rule
 

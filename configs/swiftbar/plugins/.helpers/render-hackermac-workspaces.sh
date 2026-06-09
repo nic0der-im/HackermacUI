@@ -10,7 +10,7 @@
 # <swiftbar.hideRunInTerminal>true</swiftbar.hideRunInTerminal>
 # <swiftbar.hideLastUpdated>true</swiftbar.hideLastUpdated>
 # <swiftbar.hideDisablePlugin>true</swiftbar.hideDisablePlugin>
-# <swiftbar.hideSwiftBar>true</swiftbar.hideSwiftBar>
+# <swiftbar.hideSwiftBar>false</swiftbar.hideSwiftBar>
 
 set -uo pipefail
 
@@ -23,12 +23,16 @@ MAX_ICONS_PER_WORKSPACE="${AEROSPACE_SWIFTBAR_MAX_ICONS:-5}"
 REAL_ICONS="${AEROSPACE_SWIFTBAR_REAL_ICONS:-1}"
 EMPTY_LABEL="${AEROSPACE_SWIFTBAR_EMPTY_LABEL:-}"
 STRIP_CACHE_LIMIT="${AEROSPACE_SWIFTBAR_STRIP_CACHE_LIMIT:-24}"
-CACHE_ROOT="${SWIFTBAR_PLUGIN_CACHE_PATH:-${TMPDIR:-/tmp}/swiftbar-aerospace-workspaces}"
+RENDER_MODE="${AEROSPACE_SWIFTBAR_RENDER_MODE:-image}"
+COMPACT_MODE="${AEROSPACE_SWIFTBAR_COMPACT:-1}"
+CACHE_ROOT="${SWIFTBAR_PLUGIN_CACHE_PATH:-${TMPDIR:-/tmp}/swiftbar-hackermac-workspaces}"
 CACHE_FILE="$CACHE_ROOT/menu.txt"
 ICON_CACHE_ROOT="$CACHE_ROOT/icons"
 STRIP_CACHE_ROOT="$CACHE_ROOT/strips"
 STRIP_STATE_FILE="$CACHE_ROOT/strip-state.tsv"
-RENDERER="$SCRIPT_DIR/.helpers/render-workspace-strip.jxa"
+STRIP_B64_FILE="$CACHE_ROOT/strip.b64"
+STRIP_KEY_FILE="$CACHE_ROOT/strip.key"
+RENDERER="$SCRIPT_DIR/render-workspace-strip.jxa"
 
 GREEN="#82FB9C"
 MUTED="#8A8F98"
@@ -42,6 +46,13 @@ BASE64="/usr/bin/base64"
 OSASCRIPT="/usr/bin/osascript"
 LS="/bin/ls"
 RM="/bin/rm"
+PERL="/usr/bin/perl"
+
+if [[ "$TIMEOUT_TICKS" =~ ^[0-9]+$ ]]; then
+  TIMEOUT_SECONDS="$(awk -v ticks="$TIMEOUT_TICKS" 'BEGIN { printf "%.2f", ticks / 10 }')"
+else
+  TIMEOUT_SECONDS="1.50"
+fi
 
 if [[ ! -x "$AEROSPACE" ]]; then
   echo "WS ? | color=$ERROR"
@@ -52,39 +63,14 @@ fi
 
 mkdir -p "$CACHE_ROOT" "$ICON_CACHE_ROOT" "$STRIP_CACHE_ROOT" 2>/dev/null || true
 
-run_with_timeout() {
-  local max_ticks="$1"
-  shift
-  local tmp pid status ticks
-
-  tmp="$(mktemp "${TMPDIR:-/tmp}/swiftbar-aerospace.XXXXXX")" || return 1
-  "$@" >"$tmp" 2>/dev/null &
-  pid="$!"
-  ticks=0
-
-  while kill -0 "$pid" 2>/dev/null; do
-    if (( ticks >= max_ticks )); then
-      kill "$pid" 2>/dev/null || true
-      sleep 0.1
-      kill -9 "$pid" 2>/dev/null || true
-      wait "$pid" 2>/dev/null || true
-      rm -f "$tmp"
-      return 124
-    fi
-
-    sleep 0.1
-    ticks=$((ticks + 1))
-  done
-
-  wait "$pid"
-  status="$?"
-  cat "$tmp"
-  rm -f "$tmp"
-  return "$status"
-}
-
 aerospace_capture() {
-  run_with_timeout "$TIMEOUT_TICKS" "$AEROSPACE" "$@"
+  "$PERL" -MTime::HiRes=alarm -e '
+    $SIG{ALRM} = sub { exit 124 };
+    my $timeout = shift @ARGV;
+    alarm($timeout);
+    exec @ARGV;
+    exit 127;
+  ' "$TIMEOUT_SECONDS" "$AEROSPACE" "$@" 2>/dev/null
 }
 
 app_icon() {
@@ -168,21 +154,6 @@ icon_base64() {
   "$BASE64" <"$png" | tr -d '\n'
 }
 
-workspace_primary_image() {
-  local ws="$1"
-  local record app bundle image
-
-  while IFS= read -r record; do
-    [[ -z "$record" ]] && continue
-    app="${record%%|*}"
-    bundle="${record#*|}"
-    image="$(icon_base64 "$app" "$bundle")" || true
-    [[ -n "$image" ]] && printf '%s' "$image" && return 0
-  done < <(workspace_app_records "$ws")
-
-  return 1
-}
-
 workspace_icons() {
   local ws="$1"
   local app count out icon
@@ -201,13 +172,16 @@ workspace_icons() {
 }
 
 write_strip_state() {
-  local ws record app bundle icon limit count icon_mtime
+  local ws record app bundle icon count icon_mtime records focused_flag
 
   : >"$STRIP_STATE_FILE" || return 1
   for ws in $WORKSPACES; do
     count=0
-    if ! workspace_app_records "$ws" | grep -q .; then
-      printf '%s\t%s\t\t\t0\n' "$ws" "$([[ "$ws" == "$focused" ]] && printf '1' || printf '0')" >>"$STRIP_STATE_FILE"
+    focused_flag="0"
+    [[ "$ws" == "$focused" ]] && focused_flag="1"
+    records="$(workspace_app_records "$ws")"
+    if [[ -z "$records" ]]; then
+      printf '%s\t%s\t\t\t0\n' "$ws" "$focused_flag" >>"$STRIP_STATE_FILE"
       continue
     fi
 
@@ -217,15 +191,15 @@ write_strip_state() {
       bundle="${record#*|}"
       icon="$(icon_png "$app" "$bundle")" || icon=""
       icon_mtime="$(file_mtime "$icon")"
-      printf '%s\t%s\t%s\t%s\t%s\n' "$ws" "$([[ "$ws" == "$focused" ]] && printf '1' || printf '0')" "$app" "$icon" "$icon_mtime" >>"$STRIP_STATE_FILE"
+      printf '%s\t%s\t%s\t%s\t%s\n' "$ws" "$focused_flag" "$app" "$icon" "$icon_mtime" >>"$STRIP_STATE_FILE"
       count=$((count + 1))
       (( count >= MAX_ICONS_PER_WORKSPACE )) && break
-    done < <(workspace_app_records "$ws")
+    done <<<"$records"
   done
 }
 
 strip_image_base64() {
-  local key png renderer_mtime
+  local key png renderer_mtime cached_key
 
   [[ -x "$OSASCRIPT" && -x "$BASE64" && -f "$RENDERER" ]] || return 1
   write_strip_state || return 1
@@ -233,13 +207,22 @@ strip_image_base64() {
   key="$(cksum <"$STRIP_STATE_FILE" | awk -v renderer_mtime="$renderer_mtime" '{ print $1 "-" $2 "-" renderer_mtime }')"
   png="$STRIP_CACHE_ROOT/$key.png"
 
+  cached_key=""
+  [[ -s "$STRIP_KEY_FILE" ]] && cached_key="$(tr -d '\n' <"$STRIP_KEY_FILE")"
+  if [[ "$cached_key" == "$key" && -s "$STRIP_B64_FILE" ]]; then
+    tr -d '\n' <"$STRIP_B64_FILE"
+    return 0
+  fi
+
   if [[ ! -s "$png" ]]; then
     "$OSASCRIPT" -l JavaScript "$RENDERER" "$STRIP_STATE_FILE" "$png" "$EMPTY_LABEL" >/dev/null 2>&1 || return 1
     prune_strip_cache
   fi
 
   [[ -s "$png" ]] || return 1
-  "$BASE64" <"$png" | tr -d '\n'
+  "$BASE64" <"$png" | tr -d '\n' >"$STRIP_B64_FILE" || return 1
+  printf '%s' "$key" >"$STRIP_KEY_FILE" || true
+  tr -d '\n' <"$STRIP_B64_FILE"
 }
 
 prune_strip_cache() {
@@ -290,9 +273,14 @@ render_current() {
   focused="$(aerospace_capture list-workspaces --focused | awk 'NR == 1 { print }')" || return 1
   window_lines="$(aerospace_capture list-windows --all --format '%{workspace}|%{app-name}|%{app-bundle-path}')" || return 1
 
-  strip_image="$(strip_image_base64)" || true
-  if [[ -n "$strip_image" ]]; then
+  if [[ "$RENDER_MODE" == "image" ]]; then
+    strip_image="$(strip_image_base64)" || true
+  fi
+
+  if [[ "$RENDER_MODE" == "image" && -n "$strip_image" ]]; then
     echo "  | image=$strip_image trim=false"
+  elif [[ "$COMPACT_MODE" == "1" ]]; then
+    echo "WS $focused | color=$GREEN font=Menlo size=12"
   else
     echo "$(render_title) | color=$GREEN font=Menlo size=12"
   fi

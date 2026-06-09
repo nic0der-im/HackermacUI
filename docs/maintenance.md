@@ -25,7 +25,7 @@ open 'swiftbar://refreshallplugins'
 |---|---|---|---|
 | Workspaces, gaps, app floating rules | AeroSpace | `configs/aerospace/aerospace.toml` | `aerospace reload-config` |
 | Command center | HackermacLauncher | `configs/launcher/menu.json`, `configs/launcher/theme.json` | restart `swift run HackermacLauncher` |
-| Menu-bar workspace strip | SwiftBar | `configs/swiftbar/plugins/aerospace-workspaces.3s.sh` | `open 'swiftbar://refreshallplugins'` |
+| Menu-bar workspace strip | SwiftBar | `configs/swiftbar/plugins/00-hackermacui.3s.sh` | `open 'swiftbar://refreshallplugins'` |
 | Focus border | JankyBorders | `configs/borders/bordersrc` | `~/.config/borders/bordersrc` |
 | Terminal feel | Ghostty | `configs/ghostty/config` | restart Ghostty windows |
 

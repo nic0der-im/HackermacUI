@@ -74,7 +74,7 @@ final class LauncherController: ObservableObject {
         if panel == nil {
             panel = LauncherPanel(theme: theme)
             let view = LauncherView(controller: self)
-            panel?.contentView = NSHostingView(rootView: view)
+            panel?.contentView = TransparentHostingView(rootView: view)
         }
 
         menuStack = [rootMenu]
@@ -220,7 +220,7 @@ final class LauncherPanel: NSPanel {
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         backgroundColor = .clear
         isOpaque = false
-        hasShadow = true
+        hasShadow = false
         titleVisibility = .hidden
         titlebarAppearsTransparent = true
         isMovableByWindowBackground = true
@@ -237,18 +237,35 @@ final class LauncherPanel: NSPanel {
     }
 }
 
+final class TransparentHostingView<Content: View>: NSHostingView<Content> {
+    required init(rootView: Content) {
+        super.init(rootView: rootView)
+        wantsLayer = true
+        layer?.backgroundColor = NSColor.clear.cgColor
+    }
+
+    @available(*, unavailable)
+    required init(rootView: Content, ignoreSafeArea: Bool) {
+        fatalError("init(rootView:ignoreSafeArea:) has not been implemented")
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
 struct LauncherView: View {
     @ObservedObject var controller: LauncherController
     @FocusState private var searchFocused: Bool
 
     var body: some View {
-        VisualEffect(material: controller.theme.material.nsMaterial)
+        VisualEffect(
+            material: controller.theme.material.nsMaterial,
+            cornerRadius: controller.theme.cornerRadius
+        )
             .overlay(content)
             .clipShape(RoundedRectangle(cornerRadius: controller.theme.cornerRadius, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: controller.theme.cornerRadius, style: .continuous)
-                    .stroke(.white.opacity(0.16), lineWidth: 1)
-            )
             .shadow(color: .black.opacity(0.36), radius: 34, y: 22)
             .frame(width: controller.theme.width, height: 560)
             .onAppear { searchFocused = true }
@@ -263,7 +280,6 @@ struct LauncherView: View {
                 .id(controller.navigationID)
             footer
         }
-        .background(Color(nsColor: .windowBackgroundColor).opacity(0.18))
         .onKeyPress(.downArrow) {
             controller.moveSelection(1)
             return .handled
@@ -390,17 +406,23 @@ struct LauncherRow: View {
 
 struct VisualEffect: NSViewRepresentable {
     let material: NSVisualEffectView.Material
+    let cornerRadius: CGFloat
 
     func makeNSView(context: Context) -> NSVisualEffectView {
         let view = NSVisualEffectView()
         view.material = material
         view.blendingMode = .behindWindow
         view.state = .active
+        view.wantsLayer = true
+        view.layer?.cornerRadius = cornerRadius
+        view.layer?.masksToBounds = true
         return view
     }
 
     func updateNSView(_ nsView: NSVisualEffectView, context: Context) {
         nsView.material = material
+        nsView.layer?.cornerRadius = cornerRadius
+        nsView.layer?.masksToBounds = true
     }
 }
 
@@ -558,7 +580,7 @@ struct ActionRunner {
             try runProcess("/usr/bin/open", [resolve(url)], cwd: nil)
         case let .ghostty(command, cwd):
             let resolvedCwd = cwd.map(resolve)
-            let shell = [resolvedCwd.map { "cd \(shellQuote($0))" }, command]
+            let shell = [resolvedCwd.map { "cd \(shellQuote($0))" }, resolve(command)]
                 .compactMap { $0 }
                 .joined(separator: " && ")
             try runProcess("/bin/bash", ["-lc", "open -na Ghostty --args -e /bin/zsh -lc \(shellQuote(shell))"], cwd: nil)

@@ -34,7 +34,7 @@ Apply only after reviewing the repo configs you want to sync:
 ./scripts/apply.sh
 ```
 
-`apply.sh` creates a backup first, then symlinks `~/.aerospace.toml`, syncs AeroSpace helper scripts, SwiftBar plugins, JankyBorders config, and Ghostty config into live paths. The sync steps use delete semantics for managed folders, so do not run it as a blind restore.
+`apply.sh` creates a backup first, then symlinks `~/.aerospace.toml`, syncs AeroSpace helper scripts, SwiftBar plugins, JankyBorders config, Ghostty config, and Fastfetch config into live paths. The sync steps use delete semantics for managed folders, so do not run it as a blind restore.
 
 ## macOS permissions
 

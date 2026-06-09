@@ -4,9 +4,9 @@ SwiftBar is the native menu-bar layer. Keep it minimal, useful, and non-duplicat
 
 ## AeroSpace workspace strip
 
-`aerospace-workspaces.3s.sh` renders the top-bar workspace strip as a cached composite PNG. The strip includes workspace numbers, focused-state styling, quiet empty workspaces, and real app icons per window when macOS app bundles expose `.icns` assets. This keeps SwiftBar + ICE as the native menu-bar layer while avoiding the one-image-per-item limitation for inline app icons.
+`00-hackermacui.3s.sh` renders the cached image-based composite strip by default. It delegates state capture and image rendering to `.helpers/render-hackermac-workspaces.sh`. The compact text renderer remains available as a fallback or opt-out via `AEROSPACE_SWIFTBAR_RENDER_MODE=text`.
 
-Icon extraction and the final composite strip must stay cached under SwiftBar's plugin cache path. Do not extract icons or redraw the composite PNG on every refresh without state-hash invalidation. AeroSpace triggers a debounced SwiftBar refresh on workspace changes; the plugin interval remains a fallback.
+When image mode is enabled, icon extraction, base64 output, and the final composite strip must stay cached under SwiftBar's plugin cache path. Do not extract icons or redraw the composite PNG on every refresh without state-hash invalidation. AeroSpace triggers an immediate SwiftBar refresh on workspace changes; the plugin interval remains a fallback.
 
 ## Detected workflow apps
 
@@ -25,11 +25,11 @@ Icon extraction and the final composite strip must stay cached under SwiftBar's 
 
 | Decision | Current state |
 |---|---|
-| Default plugin | `aerospace-workspaces.3s.sh` only. |
-| Interaction model | Display-only strip; command actions belong in HackermacLauncher. |
-| Refresh path | AeroSpace `exec-on-workspace-change` triggers a debounced refresh; the 3s interval is fallback. |
-| Rendering | Cached composite PNG with workspace numbers, focus styling, and app icons when available. |
-| Performance | State-hash invalidation; no repeated icon extraction or redraw when state is unchanged. |
+| Default plugins | `00-hackermacui.3s.sh` only. |
+| Interaction model | PNG strip in the menu bar; dropdown is limited to small HackermacUI maintenance links. Command-center actions belong in HackermacLauncher. |
+| Refresh path | AeroSpace workspace keys and `exec-on-workspace-change` trigger immediate SwiftBar refreshes; the 3s interval is fallback. |
+| Rendering | Cached composite PNG by default. Text mode remains available via `AEROSPACE_SWIFTBAR_RENDER_MODE=text`. |
+| Performance | State-hash invalidation for the workspace strip, cached composite PNGs, and cached base64 output. |
 
 ## Build order
 

@@ -1,5 +1,7 @@
 # HackermacUI zsh example
 # Copy selected lines into your own ~/.zshrc. This file intentionally avoids private values.
+# If you use Powerlevel10k instant prompt, keep the fastfetch block before
+# the instant-prompt preamble to avoid console-output warnings.
 
 export PNPM_HOME="$HOME/Library/pnpm"
 case ":$PATH:" in
@@ -60,12 +62,8 @@ if command -v bat >/dev/null 2>&1; then
   alias cat='bat --paging=never'
 fi
 
-# Show a compact system summary when opening a real interactive terminal.
+# Show the repo-managed fastfetch summary when opening an interactive terminal.
 # Set HACKERMACUI_FASTFETCH=0 to disable it for a session.
 if [[ -o interactive && "${HACKERMACUI_FASTFETCH:-1}" != "0" ]] && command -v fastfetch >/dev/null 2>&1; then
-  fastfetch \
-    --logo macos \
-    --structure Title:OS:Host:Uptime:Shell:Terminal:CPU:Memory:Disk \
-    --key-type string \
-    --show-errors false
+  fastfetch
 fi

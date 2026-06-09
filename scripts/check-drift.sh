@@ -67,5 +67,6 @@ check_file "AeroSpace" "$ROOT/configs/aerospace/aerospace.toml" "$HOME/.aerospac
 check_dir "SwiftBar plugins" "$ROOT/configs/swiftbar/plugins" "$PLUGIN_DIR"
 check_file "JankyBorders" "$ROOT/configs/borders/bordersrc" "$HOME/.config/borders/bordersrc"
 check_file "Ghostty" "$ROOT/configs/ghostty/config" "$HOME/.config/ghostty/config"
+check_file "Fastfetch" "$ROOT/configs/fastfetch/config.json" "$HOME/.config/fastfetch/config.json"
 
 exit "$status"

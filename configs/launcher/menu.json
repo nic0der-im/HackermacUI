@@ -2,6 +2,17 @@
   "title": "HackermacUI",
   "items": [
     {
+      "title": "Agents",
+      "subtitle": "Fast AI agent entrypoints",
+      "icon": "sparkles",
+      "items": [
+        { "title": "OpenCode CLI", "subtitle": "opencode in HackermacUI", "icon": "terminal", "action": { "type": "ghostty", "command": "command -v opencode >/dev/null || { print -u2 'opencode not found'; exec zsh; }; opencode", "cwd": "${repo}" } },
+        { "title": "Codex CLI", "subtitle": "codex in HackermacUI", "icon": "terminal", "action": { "type": "ghostty", "command": "command -v codex >/dev/null || { print -u2 'codex not found'; exec zsh; }; codex", "cwd": "${repo}" } },
+        { "title": "Codex App", "subtitle": "Open native Codex app", "icon": "app", "action": { "type": "openApp", "name": "Codex" } },
+        { "title": "Hermes Homeserver", "subtitle": "SSH direct agent session", "icon": "server.rack", "action": { "type": "ghostty", "command": "${repo}/scripts/hermes-homeserver.sh" } }
+      ]
+    },
+    {
       "title": "TUIs",
       "subtitle": "Terminal tools in Ghostty",
       "icon": "terminal",
@@ -98,6 +109,7 @@
         { "title": "Cmd+Shift+F", "subtitle": "Open Finder window", "icon": "keyboard" },
         { "title": "Cmd+O", "subtitle": "Open Obsidian", "icon": "keyboard" },
         { "title": "Cmd+D", "subtitle": "Open LazyDocker", "icon": "keyboard" },
+        { "title": "Cmd+Shift+A", "subtitle": "Open OpenCode CLI", "icon": "keyboard" },
         { "title": "Alt+1..6", "subtitle": "Switch workspace", "icon": "keyboard" },
         { "title": "Alt+Ctrl+1..6", "subtitle": "Move focused window to workspace", "icon": "keyboard" },
         { "title": "Alt+Arrows", "subtitle": "Focus windows", "icon": "keyboard" },

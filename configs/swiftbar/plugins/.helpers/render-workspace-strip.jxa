@@ -72,15 +72,15 @@ function main(argv) {
   const workspaces = parseState(statePath)
 
   const scale = 1
-  const height = 32
+  const height = 30
   const padX = 0
   const gap = 4
-  const iconSize = 21
+  const iconSize = 20
   const iconGap = 4
   const labelGap = 6
-  const segmentPadX = 8
+  const segmentPadX = 7
   const segmentPadY = 3
-  const textY = 9
+  const textY = 8
   const iconY = 5
   const font = $.NSFont.fontWithNameSize('Menlo', 12) || $.NSFont.monospacedSystemFontOfSizeWeight(12, $.NSFontWeightMedium)
   const activeFont = $.NSFont.fontWithNameSize('Menlo-Bold', 12) || font
@@ -98,10 +98,11 @@ function main(argv) {
   const segments = workspaces.map((workspace) => {
     const textAttributes = workspace.focused ? activeAttrs : normalAttrs
     const label = workspace.name
-    let width = segmentPadX * 2 + textWidth(label, textAttributes) + labelGap
+    let width = segmentPadX * 2 + textWidth(label, textAttributes)
     if (workspace.apps.length === 0) {
-      width += textWidth(emptyLabel, mutedAttrs)
+      if (emptyLabel !== '') width += labelGap + textWidth(emptyLabel, mutedAttrs)
     } else {
+      width += labelGap
       width += Math.min(workspace.apps.length, 5) * iconSize + Math.max(0, Math.min(workspace.apps.length, 5) - 1) * iconGap
     }
     return { workspace, width: Math.ceil(width) }
@@ -128,11 +129,12 @@ function main(argv) {
     const textAttributes = workspace.focused ? activeAttrs : normalAttrs
     const label = workspace.name
     drawText(label, innerX, textY, textAttributes)
-    innerX += textWidth(label, textAttributes) + labelGap
+    innerX += textWidth(label, textAttributes)
 
     if (workspace.apps.length === 0) {
-      if (emptyLabel !== '') drawText(emptyLabel, innerX, textY, mutedAttrs)
+      if (emptyLabel !== '') drawText(emptyLabel, innerX + labelGap, textY, mutedAttrs)
     } else {
+      innerX += labelGap
       workspace.apps.slice(0, 5).forEach((app) => {
         const icon = app.icon ? $.NSImage.alloc.initWithContentsOfFile(app.icon) : null
         if (icon) {

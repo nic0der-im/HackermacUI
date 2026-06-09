@@ -5,7 +5,7 @@ clipboard-write = ask
 cursor-color = #dfdfdf
 cursor-opacity = 0.33
 cursor-text = #2b2b2b
-font-family = GeistMono Nerd Font Propo
+font-family = JetBrainsMono Nerd Font Mono
 foreground = #dfdfdf
 keybind = global:ctrl+shift+grave_accent=toggle_quick_terminal
 # Developer workflow keybindings.
@@ -50,6 +50,12 @@ selection-background = #2e436e
 selection-foreground = #dfdfdf
 shell-integration-features = cursor,sudo,title,no-ssh-env,no-ssh-terminfo,path
 title = ~tty
+# Ensure Ghostty fully quits on Cmd+Q and exits when the last window closes.
+# Without this, Cmd+Q can appear to only close a surface and leave ghost
+# instances running in the Dock.
+keybind = super+q=quit
+quit-after-last-window-closed = true
+
 window-padding-balance = true
 window-padding-color = extend
 window-subtitle = working-directory

@@ -27,6 +27,7 @@ copy_file_if_exists "$HOME/.aerospace.toml" "$BACKUP_DIR/aerospace.toml"
 copy_if_exists "$HOME/SwiftBarPlugins/" "$BACKUP_DIR/SwiftBarPlugins/"
 copy_if_exists "$HOME/.config/borders/" "$BACKUP_DIR/borders/"
 copy_if_exists "$HOME/.config/ghostty/" "$BACKUP_DIR/ghostty/"
+copy_if_exists "$HOME/.config/fastfetch/" "$BACKUP_DIR/fastfetch/"
 copy_if_exists "$HOME/.zshrc" "$BACKUP_DIR/zshrc"
 
 cat > "$STATE_DIR/state.json" <<JSON
