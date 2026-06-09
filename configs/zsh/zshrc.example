@@ -62,7 +62,7 @@ fi
 
 # Show a compact system summary when opening a real interactive terminal.
 # Set HACKERMACUI_FASTFETCH=0 to disable it for a session.
-if [[ -o interactive && -t 1 && "${HACKERMACUI_FASTFETCH:-1}" != "0" ]] && command -v fastfetch >/dev/null 2>&1; then
+if [[ -o interactive && "${HACKERMACUI_FASTFETCH:-1}" != "0" ]] && command -v fastfetch >/dev/null 2>&1; then
   fastfetch \
     --logo macos \
     --structure Title:OS:Host:Uptime:Shell:Terminal:CPU:Memory:Disk \
