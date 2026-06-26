@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # <xbar.title>HackermacUI Workspaces</xbar.title>
 # <xbar.version>v1.0.0</xbar.version>
 # <xbar.author>Ignacio Medina</xbar.author>
@@ -13,6 +13,8 @@
 # <swiftbar.hideSwiftBar>true</swiftbar.hideSwiftBar>
 
 set -uo pipefail
+
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin${PATH:+:$PATH}"
 
 SCRIPT_PATH="${SWIFTBAR_PLUGIN_PATH:-$0}"
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
