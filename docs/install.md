@@ -19,6 +19,14 @@ brew install lazygit lazydocker node pnpm go redis postgresql@16 postgresql@18 f
 brew install --cask orbstack
 ```
 
+Optional menu-bar cleanup:
+
+```bash
+brew install --cask jordanbaird-ice
+```
+
+Ice is not part of the core HackermacUI runtime. Use it only to hide unrelated menu-bar items, keeping Battery, Control Center, Clock, and the HackermacUI SwiftBar workspace plugin visible.
+
 ## Safe Apply Path
 
 Start with read-only checks and a backup:
@@ -45,6 +53,14 @@ curl -fsSL https://raw.githubusercontent.com/nic0der-im/HackermacUI/main/scripts
 ```
 
 The bootstrap clones the repo and prints the safe next steps. It does not run `apply.sh` automatically.
+
+Run the guided setup wizard from the cloned repo:
+
+```bash
+./scripts/onboard.sh
+```
+
+The onboarding wizard can install dependencies, open macOS permission panes, build and restart HackermacLauncher, install the Launcher login item, open Ice, and run checks. It only runs `apply.sh` after an explicit confirmation inside the wizard.
 
 To install dependencies from a cloned repo:
 

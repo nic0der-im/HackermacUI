@@ -102,6 +102,7 @@ Install and apply are separate.
 | Step | Allowed behavior |
 |---|---|
 | `scripts/bootstrap.sh` | Clone/download repo and print safe next steps. |
+| `scripts/onboard.sh` | Guide first-run setup with prompts; may call installers, checks, launcher build/login helpers, and `apply.sh` only after explicit confirmation. |
 | `scripts/install-deps.sh` | Install Homebrew dependencies after confirmation. |
 | `scripts/doctor.sh` | Verify required tools and runtime state. |
 | `scripts/apply.sh` | Mutate live config only after review and explicit user action. |

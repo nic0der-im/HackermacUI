@@ -64,10 +64,12 @@
       "subtitle": "Guarded Homebrew installers",
       "icon": "arrow.down.circle",
       "items": [
+        { "title": "Onboarding Wizard", "subtitle": "Guided setup in Ghostty", "icon": "wand.and.stars", "confirm": true, "action": { "type": "ghostty", "command": "./scripts/onboard.sh; exec zsh", "cwd": "${repo}" } },
         { "title": "LazyGit", "icon": "terminal", "confirm": true, "action": { "type": "ghostty", "command": "brew install lazygit" } },
         { "title": "LazyDocker", "icon": "shippingbox", "confirm": true, "action": { "type": "ghostty", "command": "brew install lazydocker" } },
         { "title": "btop", "icon": "gauge", "confirm": true, "action": { "type": "ghostty", "command": "brew install btop" } },
         { "title": "Fastfetch", "icon": "info.circle", "confirm": true, "action": { "type": "ghostty", "command": "brew install fastfetch" } },
+        { "title": "Ice", "subtitle": "Optional menu-bar hider", "icon": "menubar.rectangle", "confirm": true, "action": { "type": "ghostty", "command": "brew install --cask jordanbaird-ice" } },
         { "title": "HackermacUI Dependencies", "subtitle": "Run guarded dependency installer", "icon": "arrow.down.doc", "confirm": true, "action": { "type": "ghostty", "command": "./scripts/install-deps.sh; exec zsh", "cwd": "${repo}" } }
       ]
     },

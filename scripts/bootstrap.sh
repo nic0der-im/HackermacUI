@@ -24,6 +24,8 @@ cd "$TARGET_DIR"
 
 printf '\nHackermacUI downloaded to %s\n' "$TARGET_DIR"
 printf 'Next safe path:\n'
+printf '  ./scripts/onboard.sh\n'
+printf '\nManual path if you do not want the onboarding wizard:\n'
 printf '  ./scripts/install-deps.sh\n'
 printf '  ./scripts/doctor.sh\n'
 printf '  ./scripts/backup.sh\n'

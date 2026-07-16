@@ -70,6 +70,7 @@ The important design constraint is ownership. AeroSpace is the window manager. S
 | Terminal | Ghostty | Provides the glass terminal, quick terminal, tab behavior, splits, and shell entrypoints. |
 | Shell helpers | zsh, fzf, atuin, zoxide | Gives the terminal workflow fast history, navigation, completion, and shell ergonomics. |
 | Local dev tools | OrbStack, PostgreSQL, Redis, pnpm, Node.js, Go, gh, lazygit, lazydocker | Optional development environment tools surfaced through config, launcher actions, or shell workflows. |
+| Menu-bar cleanup | Ice | Optional user chrome for hiding unrelated menu-bar items; SwiftBar still owns the HackermacUI workspace widget. |
 
 ## Third-Party Projects
 
@@ -317,6 +318,7 @@ docs/
 
 scripts/
   bootstrap.sh             Safe curl/bootstrap entrypoint.
+  onboard.sh               Guided first-run setup with explicit confirmations.
   install-deps.sh          Guarded Homebrew dependency installer.
   template.sh              Render/switch profile templates.
   build-launcher-app.sh    Build local HackermacLauncher.app.
@@ -349,6 +351,9 @@ brew install --cask orbstack
 Use the guarded repo workflow:
 
 ```bash
+./scripts/onboard.sh      # guided setup path
+
+# Or run the manual path yourself:
 ./scripts/doctor.sh
 ./scripts/backup.sh
 ./scripts/check-drift.sh
@@ -363,6 +368,7 @@ After applying, open AeroSpace and SwiftBar once so macOS can grant any required
 
 ```bash
 ./scripts/status.sh       # show current desktop-management state
+./scripts/onboard.sh      # guided setup with explicit confirmations
 ./scripts/doctor.sh       # verify required apps, CLIs, and macOS settings
 ./scripts/backup.sh       # copy live configs to ~/.hackermacui/backups/<timestamp>
 ./scripts/check-drift.sh  # compare live configs against repo snapshots
@@ -375,6 +381,21 @@ After applying, open AeroSpace and SwiftBar once so macOS can grant any required
 ./scripts/apply.sh        # apply repo configs to the live machine after review
 ```
 
+## Optional Menu-Bar Cleanup
+
+Ice is optional in HackermacUI. SwiftBar remains the only HackermacUI-owned menu-bar widget layer, but Ice can be used as user chrome to hide third-party or low-signal macOS menu-bar items.
+
+Recommended visible items when using Ice:
+
+| Visible item | Why |
+|---|---|
+| Battery | Native power status should stay visible. |
+| Control Center | Keeps Wi-Fi, Bluetooth, sound, display, and Focus reachable. |
+| Clock | Native time remains a system anchor. |
+| HackermacUI SwiftBar plugin | Shows the AeroSpace workspace strip. |
+
+Everything else can be hidden behind Ice based on the user's machine. Ice preferences are intentionally local because menu-bar item names and ordering vary by installed apps.
+
 ## Intentionally Absent
 
 HackermacUI avoids overlapping desktop managers by default.
@@ -383,9 +404,8 @@ HackermacUI avoids overlapping desktop managers by default.
 |---|---|
 | Raycast | Replaced by HackermacLauncher for the command-center role. |
 | SketchyBar | SwiftBar owns the native menu-bar widget surface. |
-| Ice | SwiftBar stays the only menu-bar widget layer; hidden-item managers can mask status item bugs. |
-| Bartender | SwiftBar stays the only menu-bar widget layer. |
-| Hidden Bar | SwiftBar stays the only menu-bar widget layer. |
+| Bartender | Ice is the preferred optional hider when menu-bar cleanup is needed. |
+| Hidden Bar | Ice is the preferred optional hider when menu-bar cleanup is needed. |
 | AltTab | AeroSpace owns focus and workspace navigation. |
 | Hammerspoon | Avoided as a second automation/window layer. |
 | Rift | Avoided as a competing desktop/window layer. |

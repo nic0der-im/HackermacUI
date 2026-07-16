@@ -27,6 +27,7 @@ open 'swiftbar://refreshallplugins'
 
 | Area | Owner | Config | Reload |
 |---|---|---|---|
+| First-run setup | Onboarding script | `scripts/onboard.sh` | rerun selected prompted steps |
 | Workspaces, gaps, app floating rules | AeroSpace | `configs/aerospace/aerospace.toml` | `aerospace reload-config` |
 | Command center | HackermacLauncher | `configs/launcher/menu.json`, `configs/launcher/theme.json` | restart `swift run HackermacLauncher` |
 | Menu-bar workspace strip | SwiftBar | `configs/swiftbar/plugins/00-hackermacui.3s.sh` | `open 'swiftbar://refreshallplugins'` |

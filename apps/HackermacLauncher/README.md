@@ -18,7 +18,7 @@ For the app-bundle flow, build the local `.app` bundle:
 ./scripts/restart-launcher.sh
 ```
 
-The generated bundle lives at `dist/HackermacLauncher.app` and is intentionally ignored by git. Launch-at-login is still future work.
+The generated bundle lives at `dist/HackermacLauncher.app` and is intentionally ignored by git. Launch-at-login is managed by `scripts/launcher-login.sh`.
 
 Enable or remove launch-at-login with:
 

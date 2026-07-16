@@ -16,7 +16,13 @@ set -uo pipefail
 
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin${PATH:+:$PATH}"
 
-AEROSPACE="${AEROSPACE:-/opt/homebrew/bin/aerospace}"
+if [[ -z "${AEROSPACE:-}" ]]; then
+  if [[ -x "/opt/homebrew/bin/aerospace" ]]; then
+    AEROSPACE="/opt/homebrew/bin/aerospace"
+  else
+    AEROSPACE="/Applications/AeroSpace.app/Contents/MacOS/AeroSpace"
+  fi
+fi
 SCRIPT_PATH="${SWIFTBAR_PLUGIN_PATH:-$0}"
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 PROFILE_ENV="${HACKERMACUI_PROFILE_ENV:-$HOME/.config/aerospace/scripts/profile.env}"
@@ -248,7 +254,6 @@ write_strip_state() {
     [[ "$ws" == "$focused" ]] && focused_flag="1"
     records="$(workspace_app_records "$ws")"
     if [[ -z "$records" ]]; then
-      printf '%s\t%s\t\t\t0\n' "$ws" "$focused_flag" >>"$tmp_state"
       continue
     fi
 

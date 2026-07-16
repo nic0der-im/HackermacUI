@@ -37,4 +37,8 @@ if confirm 'Install optional local development tools?'; then
   brew install --cask orbstack
 fi
 
+if confirm 'Install optional Ice menu-bar hider?'; then
+  brew install --cask jordanbaird-ice
+fi
+
 printf 'Dependency install finished. Run ./scripts/doctor.sh next.\n'

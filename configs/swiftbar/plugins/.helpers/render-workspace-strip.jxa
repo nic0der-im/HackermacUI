@@ -76,9 +76,9 @@ function main(argv) {
   const padX = 0
   const gap = 4
   const iconSize = 20
-  const iconGap = 4
-  const labelGap = 6
-  const segmentPadX = 7
+  const iconGap = 3
+  const labelGap = 4
+  const segmentPadX = 5
   const segmentPadY = 3
   const textY = 8
   const iconY = 5
