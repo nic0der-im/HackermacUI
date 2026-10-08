@@ -13,10 +13,8 @@ When image mode is enabled, icon extraction, base64 output, and the final compos
 | Area | Detected tools | Widget idea |
 |---|---|---|
 | Tiling | AeroSpace | Composite workspace strip with focused styling and cached real app icons. Implemented. |
-| Terminal/dev shell | Ghostty, git, gh, pnpm, node, go, lazygit | Current repo status, branch, dirty count, PR/CI shortcut. |
 | IDE/AI coding | PhpStorm, Codex | Focused project shortcut, local dev server status. |
 | Browser | Google Chrome, Safari | Focus-mode shortcut or active workspace browser count. |
-| Local services | OrbStack, PostgreSQL, Redis | Compact service health: containers, DB, ports. |
 | Knowledge | Obsidian | Quick vault/open daily note. |
 | Security | 1P CLI | Lock/unlock state or quick access shortcut. |
 | Communication | Discord, WhatsApp | Keep out of the bar unless there is a concrete notification workflow. |

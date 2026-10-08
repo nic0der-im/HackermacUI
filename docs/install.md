@@ -9,9 +9,7 @@ into groups you can install separately:
 
 ```bash
 brew bundle --file Brewfile          # core: AeroSpace, SwiftBar, Ghostty, borders,
-                                      # fonts, gh, fzf, atuin, zoxide, fastfetch, bat, ripgrep
-brew bundle --file Brewfile.dev      # optional: OrbStack, lazygit, lazydocker, node,
-                                      # pnpm, go, redis, postgresql@18
+                                      # JetBrains Mono Nerd Font, fastfetch
 brew bundle --file Brewfile.extras   # optional: Ice menu-bar hider
 ```
 

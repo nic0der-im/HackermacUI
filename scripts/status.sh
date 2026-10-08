@@ -11,7 +11,7 @@ else
 fi
 
 echo "== Services =="
-brew services list | grep -E 'borders|atuin|redis|postgresql' || true
+brew services list | grep -E 'borders' || true
 
 echo
 echo "== HackermacUI profile =="

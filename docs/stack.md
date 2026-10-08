@@ -32,7 +32,6 @@ Ice.app
 
 | Rule | Owner | Why |
 |---|---|---|
-| `Cmd+Shift+A` opens OpenCode CLI | AeroSpace + Ghostty | Direct fast path for agent work. |
 | SwiftBar workspace strip has only maintenance dropdown links | SwiftBar | The menu bar remains a compact status surface. |
 | Ice is optional, not core | User chrome | It hides unrelated menu-bar items but does not own HackermacUI widgets or command-center behavior. |
 | Public default uses four workspaces | AeroSpace profile | Machine-specific monitor names stay in explicit templates such as `ignacio-dual-lg`. |

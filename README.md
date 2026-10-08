@@ -65,8 +65,7 @@ The important design constraint is ownership. AeroSpace is the window manager. S
 | Workspace widget | `00-hackermacui.3s.sh` | Custom SwiftBar plugin that renders a compact workspace strip from AeroSpace state. |
 | Focus border | JankyBorders / `borders` | Draws a 3px active-window gradient border while leaving inactive borders transparent. |
 | Terminal | Ghostty | Provides the glass terminal, quick terminal, tab behavior, splits, and shell entrypoints. |
-| Shell helpers | zsh, fzf, atuin, zoxide | Gives the terminal workflow fast history, navigation, completion, and shell ergonomics. |
-| Local dev tools | OrbStack, PostgreSQL, Redis, pnpm, Node.js, Go, gh, lazygit, lazydocker | Optional development environment tools surfaced through config or shell workflows. |
+| Shell tooling | Fastfetch | Optional system-info panel; config only, the shell startup hook is left to the user. |
 | Menu-bar cleanup | Ice | Optional user chrome for hiding unrelated menu-bar items; SwiftBar still owns the HackermacUI workspace widget. |
 
 ## Third-Party Projects
@@ -75,7 +74,7 @@ The important design constraint is ownership. AeroSpace is the window manager. S
 
 AeroSpace is the core tiling window manager. HackermacUI uses it for public workspaces `1..4`, directional focus, resize, movement, floating toggles, app launch shortcuts, and workspace-change hooks. Machine-specific layouts live in templates.
 
-App launch shortcuts live on `Alt+*`, not `Cmd+*`: `Cmd+Enter`, `Cmd+B`, `Cmd+O`, `Cmd+D`, and `Cmd+Shift+F` collided with macOS/app defaults (bold, open, bookmark, search). Focus and window movement use vim-style `H/J/K/L` instead of arrow keys, freeing `Alt+Ctrl+Arrow` entirely and keeping `Alt+Shift+Arrow` for resize.
+App launch shortcuts live on `Alt+*`, not `Cmd+*`: `Cmd+Enter`, `Cmd+B`, `Cmd+O`, and `Cmd+Shift+F` collided with macOS/app defaults (bold, open, bookmark, search). Focus and window movement use vim-style `H/J/K/L` instead of arrow keys, freeing `Alt+Ctrl+Arrow` entirely and keeping `Alt+Shift+Arrow` for resize.
 
 Repo-owned files:
 
@@ -99,7 +98,7 @@ Key behavior:
 | Resize | `Alt+Shift+Arrow`. |
 | Floating toggle | `Alt+Shift+Space`. |
 | Next active workspace | `Alt+Tab`. |
-| App shortcuts | `Cmd+Enter` Ghostty, `Cmd+B` Chrome, `Cmd+Shift+F` Finder, `Cmd+O` Obsidian, `Cmd+D` LazyDocker, `Cmd+Shift+A` OpenCode CLI. |
+| App shortcuts | `Cmd+Enter` Ghostty, `Cmd+B` Chrome, `Cmd+Shift+F` Finder, `Cmd+O` Obsidian. |
 | Service mode | `Alt+Shift+;` enters it; `Esc` returns to main; `Shift+R` reloads config, other bindings unchanged. |
 
 ### SwiftBar
@@ -167,28 +166,15 @@ Key behavior:
 | Tabs and splits | `Cmd+N`, `Cmd+T`, `Cmd+D`, `Cmd+Shift+D`. |
 | Shell integration | Cursor, sudo, title, path, and related Ghostty shell features. |
 
-### Shell And Developer Tools
+### Fastfetch
 
-HackermacUI includes a zsh example and expects common terminal tools to be installed through Homebrew when desired.
+Fastfetch provides an optional terminal system-info panel. HackermacUI ships only its config; calling it from your shell startup is up to you (see `docs/dotfiles.md`).
 
 Repo-owned file:
 
 | File | Purpose |
 |---|---|
-| `configs/zsh/zshrc.example` | Portable shell example, not a forced live shell replacement. |
-
-Common tools:
-
-| Tool | Role |
-|---|---|
-| `fzf` | Fuzzy selection in terminal workflows. |
-| `atuin` | Shell history. |
-| `zoxide` | Fast directory jumping. |
-| `lazygit` | Git TUI opened from the terminal. |
-| `lazydocker` | Docker TUI opened from the AeroSpace shortcut or terminal. |
-| `gh` | GitHub CLI for repo workflows. |
-| `OrbStack` | Optional local container runtime. |
-| `PostgreSQL`, `Redis`, `Node.js`, `pnpm`, `Go` | Optional local development stack. |
+| `configs/fastfetch/config.json` | Fastfetch module list, so the default logo stays intact. |
 
 ## Own Projects
 
@@ -228,7 +214,7 @@ Core behavior:
 | Ghostty | `~/.config/ghostty/` | `configs/ghostty/` | `rsync --delete`. |
 | Theme palette | `~/.config/hackermacui/theme/` | `configs/theme/` | `rsync --delete`. |
 | Template profiles | Repo-rendered config | `configs/templates/profiles/` | Rendered by `scripts/template.sh`. |
-| zsh example | Manual copy | `configs/zsh/zshrc.example` | Not applied automatically. |
+| Fastfetch | `~/.config/fastfetch/config.json` | `configs/fastfetch/config.json` | `rsync --delete`. |
 
 `apply.sh` is intentionally powerful. It creates a backup first, then syncs managed folders into live paths. Because several sync steps use delete semantics, review the configs before applying them.
 
@@ -242,7 +228,7 @@ configs/
   swiftbar/                SwiftBar plugin and widget docs.
   templates/               Profile templates for public and machine-specific layouts.
   theme/                   Shared color palette consumed by borders and Ghostty.
-  zsh/                     Portable zsh example.
+  fastfetch/               Fastfetch module list.
 
 docs/
   contracts.md             APIs and extension contracts.
@@ -278,7 +264,6 @@ the core stack with Homebrew, plus optional groups as needed:
 
 ```bash
 brew bundle --file Brewfile          # core stack (see docs/install.md for the full list)
-brew bundle --file Brewfile.dev      # optional local development tools
 brew bundle --file Brewfile.extras   # optional Ice menu-bar hider
 ```
 
@@ -358,7 +343,7 @@ Keep this repository shareable.
 | Portable scripts | Raw machine snapshots |
 | Native app source | Logs and runtime dumps |
 | Documentation | Private overlays |
-| Example shell config | Shell history and personal local state |
+| Example configs | Personal local state |
 
 Local backups and snapshots belong under `~/.hackermacui/` or ignored paths.
 

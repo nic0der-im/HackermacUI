@@ -124,8 +124,6 @@ persistent-workspaces = ['1', '2', '3', '4', '5', '6']
     cmd-b = 'exec-and-forget open -na "Google Chrome"'
     cmd-shift-f = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/finder-new-window"'
     cmd-o = 'exec-and-forget open -na Obsidian'
-    cmd-d = 'exec-and-forget /bin/bash -c "open -na Ghostty --args -e lazydocker"'
-    cmd-shift-a = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/launch-opencode.sh"'
 
     # Focus. Arrows, plus JKLI: I up, J left, K down, L right.
     alt-left = 'focus left'

@@ -9,7 +9,7 @@
 | Fastfetch | `~/.config/fastfetch/config.json` | `configs/fastfetch/config.json` |
 | Theme palette | `~/.config/hackermacui/theme/palette.env` | `configs/theme/palette.env` |
 | Template profiles | rendered into repo configs | `configs/templates/profiles/` |
-| zsh example | manual copy | `configs/zsh/zshrc.example` |
+| Fastfetch startup | add `fastfetch` to your own shell startup file | not managed by this repo |
 
 ## Runtime notes
 

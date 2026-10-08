@@ -33,7 +33,7 @@ Use when work involves HackermacUI maintenance scripts, live config application,
 ## Execution Steps
 
 1. Inspect `git status --short` and relevant docs/scripts.
-2. Identify whether the change affects AeroSpace, SwiftBar, borders, Ghostty, zsh example, or support scripts.
+2. Identify whether the change affects AeroSpace, SwiftBar, borders, Ghostty, Fastfetch, or support scripts.
 3. Prefer targeted edits and targeted reload commands over full apply.
 4. Verify shell syntax for changed shell scripts.
 5. Recommend `./scripts/check-drift.sh` after live changes, but do not treat drift as a public-safety scan.

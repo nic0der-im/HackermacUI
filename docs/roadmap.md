@@ -12,14 +12,12 @@
 
 ## Next widgets
 
-1. Dev services health: OrbStack, PostgreSQL, Redis.
-2. Git/GitHub status for the focused project.
-3. Obsidian quick actions.
-4. Calendar next event, only if it beats the native Calendar menu.
+1. Git/GitHub status for the focused project.
+2. Obsidian quick actions.
+3. Calendar next event, only if it beats the native Calendar menu.
 
 ## Omarchy-inspired improvements
 
 - State file and checksum drift detection.
 - Reversible backups before apply.
 - Expand templates beyond monitor/layout profiles when the contract is stable.
-- Dev session bootstrap for tmux/lazygit/opencode/Codex workflows.

@@ -31,10 +31,6 @@ if confirm 'Install HackermacUI core Homebrew dependencies?'; then
   brew bundle --file "$ROOT/Brewfile"
 fi
 
-if confirm 'Install optional local development tools?'; then
-  brew bundle --file "$ROOT/Brewfile.dev"
-fi
-
 if confirm 'Install optional Ice menu-bar hider?'; then
   brew bundle --file "$ROOT/Brewfile.extras"
 fi

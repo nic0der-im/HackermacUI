@@ -43,3 +43,7 @@
 - Service mode's `Esc` now only returns to main mode; reload moved to `Shift+R`.
 - Standardized on JetBrainsMono Nerd Font Mono everywhere in Ghostty (font and window-title font), dropped the `font-iosevka` cask, and raised Ghostty's cursor opacity from `0.33` to `0.8`.
 - Kept the SwiftBar workspace strip on its previous design; the strip redesign was reverted.
+
+## 2026-10-08
+
+- Narrowed the repo to UI-only scope: removed `Brewfile.dev`, the shell helpers (fzf, atuin, zoxide, autosuggestions, syntax highlighting, bat, ripgrep, gh) and the zsh example, the dev-tool launchers (`Cmd+D`, `Cmd+Shift+A`), and the `hermes-homeserver.sh` script. Fastfetch stays as config only.

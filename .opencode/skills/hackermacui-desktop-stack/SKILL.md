@@ -29,7 +29,6 @@ Use when changing HackermacUI desktop behavior, app shortcuts, workspace rules, 
 | Native status/menu widget | SwiftBar |
 | Active-window visual border | JankyBorders |
 | Terminal theme, keybinds, tab/window behavior | Ghostty |
-| Shell helper example | zsh example, not managed live shell |
 
 ## Execution Steps
 

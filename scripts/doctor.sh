@@ -30,15 +30,6 @@ echo "== Required commands =="
 need_cmd brew
 need_cmd aerospace
 need_cmd borders
-need_cmd gh
-
-for optional in fzf atuin zoxide lazygit lazydocker node pnpm go redis-server postgres; do
-  if command -v "$optional" >/dev/null 2>&1; then
-    pass "$optional found"
-  else
-    warn "$optional not found (optional)"
-  fi
-done
 
 echo
 echo "== Fonts =="
