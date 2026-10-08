@@ -33,7 +33,7 @@ need_cmd borders
 
 echo
 echo "== Fonts =="
-if command -v fc-list >/dev/null 2>&1; then
+  if grep -qi 'jetbrainsmono nerd font' <<<"$(fc-list)"; then
   if fc-list | grep -qi 'jetbrainsmono nerd font'; then
     pass "JetBrainsMono Nerd Font found"
   else
