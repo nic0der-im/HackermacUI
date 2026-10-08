@@ -4,25 +4,15 @@ HackermacUI assumes macOS with Homebrew. It is designed for a curated public set
 
 ## Prerequisites
 
-Install the core tools:
+`Brewfile` at the repo root is the single source of truth for dependencies, split
+into groups you can install separately:
 
 ```bash
-brew install --cask nikitabobko/tap/aerospace swiftbar ghostty
-brew tap FelixKratz/formulae
-brew install borders gh fzf atuin zoxide zsh-autosuggestions zsh-syntax-highlighting
-```
-
-Optional dev tools used by this setup:
-
-```bash
-brew install lazygit lazydocker node pnpm go redis postgresql@16 postgresql@18 fastfetch bat ripgrep
-brew install --cask orbstack
-```
-
-Optional menu-bar cleanup:
-
-```bash
-brew install --cask jordanbaird-ice
+brew bundle --file Brewfile          # core: AeroSpace, SwiftBar, Ghostty, borders,
+                                      # fonts, gh, fzf, atuin, zoxide, fastfetch, bat, ripgrep
+brew bundle --file Brewfile.dev      # optional: OrbStack, lazygit, lazydocker, node,
+                                      # pnpm, go, redis, postgresql@18
+brew bundle --file Brewfile.extras   # optional: Ice menu-bar hider
 ```
 
 Ice is not part of the core HackermacUI runtime. Use it only to hide unrelated menu-bar items, keeping Battery, Control Center, Clock, and the HackermacUI SwiftBar workspace plugin visible.
@@ -60,7 +50,7 @@ Run the guided setup wizard from the cloned repo:
 ./scripts/onboard.sh
 ```
 
-The onboarding wizard can install dependencies, open macOS permission panes, build and restart HackermacLauncher, install the Launcher login item, open Ice, and run checks. It only runs `apply.sh` after an explicit confirmation inside the wizard.
+The onboarding wizard can install dependencies, open macOS permission panes, open Ice, and run checks. It only runs `apply.sh` after an explicit confirmation inside the wizard.
 
 To install dependencies from a cloned repo:
 
@@ -77,33 +67,3 @@ AeroSpace needs Accessibility permissions:
 3. Enable AeroSpace.
 
 SwiftBar should be allowed to run in the menu bar and at login if you want widgets always available.
-
-## Launcher
-
-HackermacLauncher is currently a SwiftPM app, not a packaged `.app` bundle:
-
-```bash
-cd apps/HackermacLauncher
-swift run HackermacLauncher
-```
-
-While running, it registers `Option+Space` and reads `configs/launcher/menu.json` plus `configs/launcher/theme.json` from the repo.
-
-Build the local app bundle with:
-
-```bash
-./scripts/build-launcher-app.sh
-./scripts/restart-launcher.sh
-```
-
-Enable launch-at-login after building the app:
-
-```bash
-./scripts/launcher-login.sh install
-```
-
-Remove it with:
-
-```bash
-./scripts/launcher-login.sh uninstall
-```

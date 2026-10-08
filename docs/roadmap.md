@@ -6,12 +6,9 @@
 - AeroSpace + SwiftBar + borders + Ghostty configs.
 - Doctor, backup, status, drift, apply, and snapshot scripts.
 - Guided onboarding script for first-run setup.
-- Native HackermacLauncher command center with declarative menus.
 - Compact SwiftBar AeroSpace workspace strip.
 - JankyBorders active-only focus border tuning.
 - Template profiles for public default and machine-specific monitor layouts.
-- Local app-bundle build flow for HackermacLauncher.
-- Launch-at-login management for the generated HackermacLauncher `.app`.
 
 ## Next widgets
 
@@ -22,7 +19,6 @@
 
 ## Omarchy-inspired improvements
 
-- Make launcher hotkey configurable instead of hardcoded to `Option+Space`.
 - State file and checksum drift detection.
 - Reversible backups before apply.
 - Expand templates beyond monitor/layout profiles when the contract is stable.

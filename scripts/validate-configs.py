@@ -1,157 +1,27 @@
 #!/usr/bin/env python3
-import json
 import re
+import stat
 import sys
 from pathlib import Path
 
+try:
+    import tomllib
+except ModuleNotFoundError:
+    # Python < 3.11: skip tomllib-based checks instead of failing validation.
+    tomllib = None
+
 ROOT = Path(__file__).resolve().parents[1]
-CONFIGS = ROOT / "configs"
-PROFILES = CONFIGS / "templates" / "profiles"
-
-ACTION_TYPES = {
-    "submenu",
-    "openApp",
-    "openPath",
-    "openURL",
-    "ghostty",
-    "aerospace",
-    "run",
-    "appleScript",
-    "sequence",
-}
-
-ACTION_REQUIRED = {
-    "openApp": {"name"},
-    "openPath": {"path"},
-    "openURL": {"url"},
-    "ghostty": {"command"},
-    "aerospace": {"args"},
-    "run": {"command"},
-    "appleScript": {"script"},
-    "sequence": {"actions"},
-}
-
-HOTKEY_KEYS = {"space", *list("abcdefghijklmnopqrstuvwxyz")}
-HOTKEY_MODIFIERS = {"option", "alt", "control", "ctrl", "shift", "command", "cmd", "super"}
+PROFILES = ROOT / "configs" / "templates" / "profiles"
+CURRENT_PROFILE_FILE = ROOT / "configs" / "templates" / "current-profile"
+ACTIVE_AEROSPACE_TOML = ROOT / "configs" / "aerospace" / "aerospace.toml"
+THEME_PALETTE = ROOT / "configs" / "theme" / "palette.env"
+GHOSTTY_CONFIG = ROOT / "configs" / "ghostty" / "config"
 
 errors: list[str] = []
 
 
 def fail(message: str) -> None:
     errors.append(message)
-
-
-def load_json(path: Path):
-    try:
-        with path.open() as handle:
-            return json.load(handle)
-    except Exception as error:
-        fail(f"{path.relative_to(ROOT)}: invalid JSON: {error}")
-        return None
-
-
-def expect_string(value, label: str, *, allow_empty: bool = False) -> None:
-    if not isinstance(value, str):
-        fail(f"{label}: expected string")
-    elif not allow_empty and not value.strip():
-        fail(f"{label}: expected non-empty string")
-
-
-def validate_action(action, label: str) -> None:
-    if not isinstance(action, dict):
-        fail(f"{label}: action must be an object")
-        return
-
-    action_type = action.get("type")
-    if action_type not in ACTION_TYPES:
-        fail(f"{label}: unsupported action type {action_type!r}")
-        return
-
-    for field in ACTION_REQUIRED.get(action_type, set()):
-        if field not in action:
-            fail(f"{label}: action type {action_type!r} requires {field!r}")
-
-    if action_type == "aerospace" and not isinstance(action.get("args"), list):
-        fail(f"{label}: aerospace args must be an array")
-    if action_type == "sequence":
-        actions = action.get("actions")
-        if not isinstance(actions, list) or not actions:
-            fail(f"{label}: sequence actions must be a non-empty array")
-        else:
-            for index, child in enumerate(actions):
-                validate_action(child, f"{label}.actions[{index}]")
-
-
-def validate_menu_item(item, label: str) -> None:
-    if not isinstance(item, dict):
-        fail(f"{label}: item must be an object")
-        return
-
-    expect_string(item.get("title"), f"{label}.title")
-
-    if "subtitle" in item and item["subtitle"] is not None:
-        expect_string(item["subtitle"], f"{label}.subtitle", allow_empty=True)
-    if "icon" in item and item["icon"] is not None:
-        expect_string(item["icon"], f"{label}.icon")
-    if "confirm" in item and not isinstance(item["confirm"], bool):
-        fail(f"{label}.confirm: expected boolean")
-
-    children = item.get("items")
-    action = item.get("action")
-    if children is not None:
-        if not isinstance(children, list):
-            fail(f"{label}.items: expected array")
-        else:
-            for index, child in enumerate(children):
-                validate_menu_item(child, f"{label}.items[{index}]")
-    elif action is not None:
-        validate_action(action, f"{label}.action")
-    else:
-        # Leaf help rows are allowed in Keybindings.
-        pass
-
-
-def validate_menu(path: Path) -> None:
-    data = load_json(path)
-    if data is None:
-        return
-    label = str(path.relative_to(ROOT))
-    expect_string(data.get("title"), f"{label}.title")
-    items = data.get("items")
-    if not isinstance(items, list) or not items:
-        fail(f"{label}.items: expected non-empty array")
-        return
-    for index, item in enumerate(items):
-        validate_menu_item(item, f"{label}.items[{index}]")
-
-
-def validate_theme(path: Path) -> None:
-    data = load_json(path)
-    if data is None:
-        return
-    label = str(path.relative_to(ROOT))
-    for field in ("material", "accentColor"):
-        expect_string(data.get(field), f"{label}.{field}")
-    for field in ("cornerRadius", "width"):
-        if not isinstance(data.get(field), (int, float)) or data[field] <= 0:
-            fail(f"{label}.{field}: expected positive number")
-    if not isinstance(data.get("maxRows"), int) or data["maxRows"] <= 0:
-        fail(f"{label}.maxRows: expected positive integer")
-
-    hotkey = data.get("hotKey")
-    if not isinstance(hotkey, dict):
-        fail(f"{label}.hotKey: expected object")
-        return
-    key = hotkey.get("key")
-    if not isinstance(key, str) or key.lower() not in HOTKEY_KEYS:
-        fail(f"{label}.hotKey.key: unsupported key {key!r}")
-    modifiers = hotkey.get("modifiers")
-    if not isinstance(modifiers, list) or not modifiers:
-        fail(f"{label}.hotKey.modifiers: expected non-empty array")
-    else:
-        for modifier in modifiers:
-            if not isinstance(modifier, str) or modifier.lower() not in HOTKEY_MODIFIERS:
-                fail(f"{label}.hotKey.modifiers: unsupported modifier {modifier!r}")
 
 
 def parse_env_workspaces(path: Path) -> list[str]:
@@ -180,28 +50,10 @@ def parse_aerospace_workspaces(path: Path) -> list[str]:
     return re.findall(r"['\"]([^'\"]+)['\"]", match.group(1))
 
 
-def parse_launcher_workspaces(path: Path) -> list[str]:
-    data = load_json(path)
-    if data is None:
-        return []
-    for item in data.get("items", []):
-        if item.get("title") == "Switch":
-            workspaces = []
-            for child in item.get("items", []):
-                action = child.get("action") or {}
-                args = action.get("args") or []
-                if action.get("type") == "aerospace" and len(args) == 2 and args[0] == "workspace":
-                    workspaces.append(str(args[1]))
-            return workspaces
-    fail(f"{path.relative_to(ROOT)}: missing Switch menu")
-    return []
-
-
 def validate_profile(profile_dir: Path) -> None:
     label = profile_dir.relative_to(ROOT)
     aerospace = profile_dir / "aerospace.toml"
     env = profile_dir / "profile.env"
-    menu = profile_dir / "launcher.menu.json"
     for required in (aerospace, env):
         if not required.exists():
             fail(f"{label}: missing {required.name}")
@@ -215,20 +67,147 @@ def validate_profile(profile_dir: Path) -> None:
             f"do not match aerospace.toml {aero_workspaces}"
         )
 
-    if menu.exists():
-        validate_menu(menu)
-        menu_workspaces = parse_launcher_workspaces(menu)
-        if menu_workspaces and aero_workspaces and menu_workspaces != aero_workspaces:
+    check_toml_parses(aerospace)
+    if aero_workspaces:
+        check_workspace_binding_coverage(aerospace, aero_workspaces)
+
+
+def check_toml_parses(path: Path) -> None:
+    if tomllib is None:
+        return
+    try:
+        tomllib.loads(path.read_text())
+    except tomllib.TOMLDecodeError as exc:
+        fail(f"{path.relative_to(ROOT)}: invalid TOML ({exc})")
+
+
+def check_workspace_binding_coverage(path: Path, workspaces: list[str]) -> None:
+    if tomllib is None:
+        return
+    try:
+        data = tomllib.loads(path.read_text())
+    except tomllib.TOMLDecodeError:
+        return  # already reported by check_toml_parses
+    binding = data.get("mode", {}).get("main", {}).get("binding", {})
+    for ws in workspaces:
+        switch_key = f"alt-{ws}"
+        if switch_key not in binding:
+            fail(f"{path.relative_to(ROOT)}: missing '{switch_key}' workspace-switch binding")
+        move_key = f"alt-ctrl-{ws}"
+        if move_key not in binding:
+            fail(f"{path.relative_to(ROOT)}: missing '{move_key}' workspace-move binding")
+
+
+def check_current_profile_matches_active() -> None:
+    if not CURRENT_PROFILE_FILE.exists():
+        fail(f"{CURRENT_PROFILE_FILE.relative_to(ROOT)}: missing file")
+        return
+    current = CURRENT_PROFILE_FILE.read_text().strip()
+    if not current:
+        fail(f"{CURRENT_PROFILE_FILE.relative_to(ROOT)}: empty")
+        return
+    profile_toml = PROFILES / current / "aerospace.toml"
+    if not profile_toml.exists():
+        fail(f"{CURRENT_PROFILE_FILE.relative_to(ROOT)}: unknown profile '{current}'")
+        return
+    if not ACTIVE_AEROSPACE_TOML.exists():
+        fail(f"{ACTIVE_AEROSPACE_TOML.relative_to(ROOT)}: missing file")
+        return
+    if ACTIVE_AEROSPACE_TOML.read_text() != profile_toml.read_text():
+        fail(
+            f"{ACTIVE_AEROSPACE_TOML.relative_to(ROOT)} does not match the rendered "
+            f"'{current}' profile ({profile_toml.relative_to(ROOT)}); "
+            "run scripts/template.sh render <profile>"
+        )
+
+
+def parse_shell_env_value(path: Path, key: str) -> str | None:
+    value = None
+    for line in path.read_text().splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if stripped.startswith(f"{key}="):
+            value = stripped.split("=", 1)[1].strip().strip('"').strip("'")
+    return value
+
+
+def parse_ghostty_value(path: Path, key: str) -> str | None:
+    value = None
+    for line in path.read_text().splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        match = re.match(rf"^{re.escape(key)}\s*=\s*(.+)$", stripped)
+        if match:
+            value = match.group(1).strip()
+    return value
+
+
+def check_ghostty_focus_color() -> None:
+    if not THEME_PALETTE.exists():
+        fail(f"{THEME_PALETTE.relative_to(ROOT)}: missing file")
+        return
+    if not GHOSTTY_CONFIG.exists():
+        fail(f"{GHOSTTY_CONFIG.relative_to(ROOT)}: missing file")
+        return
+
+    focus = parse_shell_env_value(THEME_PALETTE, "HACKERMACUI_COLOR_FOCUS")
+    if not focus:
+        fail(f"{THEME_PALETTE.relative_to(ROOT)}: missing HACKERMACUI_COLOR_FOCUS")
+        return
+
+    for key in ("cursor-color", "selection-background"):
+        value = parse_ghostty_value(GHOSTTY_CONFIG, key)
+        if not value:
+            fail(f"{GHOSTTY_CONFIG.relative_to(ROOT)}: missing '{key}'")
+            continue
+        if value.lower() != focus.lower():
             fail(
-                f"{label}: launcher Switch workspaces {menu_workspaces} "
-                f"do not match aerospace.toml {aero_workspaces}"
+                f"{GHOSTTY_CONFIG.relative_to(ROOT)}: '{key}' ({value}) does not match "
+                f"HACKERMACUI_COLOR_FOCUS ({focus}) in {THEME_PALETTE.relative_to(ROOT)}"
             )
 
 
-def main() -> int:
-    validate_menu(CONFIGS / "launcher" / "menu.json")
-    validate_theme(CONFIGS / "launcher" / "theme.json")
+def check_executable(path: Path) -> None:
+    if not path.exists():
+        fail(f"{path.relative_to(ROOT)}: missing file")
+        return
+    if not (path.stat().st_mode & stat.S_IXUSR):
+        fail(f"{path.relative_to(ROOT)}: not executable")
 
+
+def collect_executable_paths() -> list[Path]:
+    paths: list[Path] = []
+
+    scripts_dir = ROOT / "scripts"
+    if scripts_dir.exists():
+        paths += sorted(scripts_dir.glob("*.sh"))
+
+    aerospace_scripts_dir = ROOT / "configs" / "aerospace" / "scripts"
+    if aerospace_scripts_dir.exists():
+        paths += sorted(
+            path
+            for path in aerospace_scripts_dir.iterdir()
+            if path.is_file() and path.name != "profile.env"
+        )
+
+    plugins_dir = ROOT / "configs" / "swiftbar" / "plugins"
+    if plugins_dir.exists():
+        paths += sorted(plugins_dir.glob("*.sh"))
+        helpers_dir = plugins_dir / ".helpers"
+        if helpers_dir.exists():
+            paths += sorted(helpers_dir.glob("*.sh"))
+            paths += sorted(helpers_dir.glob("*.jxa"))
+
+    bordersrc = ROOT / "configs" / "borders" / "bordersrc"
+    if bordersrc.exists():
+        paths.append(bordersrc)
+
+    return paths
+
+
+def main() -> int:
     if not PROFILES.exists():
         fail("configs/templates/profiles: missing profiles directory")
     else:
@@ -237,6 +216,8 @@ def main() -> int:
             fail("configs/templates/profiles: no profiles found")
         for profile in profiles:
             validate_profile(profile)
+
+    check_ghostty_focus_color()
 
     if errors:
         print("Config validation failed:", file=sys.stderr)

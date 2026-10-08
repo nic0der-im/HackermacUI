@@ -63,7 +63,7 @@ open_accessibility_settings() {
 
 open_login_items_settings() {
   open 'x-apple.systempreferences:com.apple.LoginItems-Settings.extension' >/dev/null 2>&1 || open -a 'System Settings'
-  printf 'Allow SwiftBar, AeroSpace, Ice, and HackermacLauncher at login if prompted.\n'
+  printf 'Allow SwiftBar, AeroSpace, and Ice at login if prompted.\n'
 }
 
 open_ice() {
@@ -93,7 +93,7 @@ fi
 cd "$ROOT"
 
 section 'HackermacUI onboarding'
-printf 'This wizard installs dependencies, opens permission panes, builds the launcher, and can apply configs after explicit confirmation.\n'
+printf 'This wizard installs dependencies, opens permission panes, and can apply configs after explicit confirmation.\n'
 printf 'It is not a blind restore. Private machine state stays local.\n'
 
 section 'Homebrew'
@@ -109,11 +109,6 @@ section 'macOS permissions'
 run_step 'Open Accessibility settings for AeroSpace?' open_accessibility_settings
 run_step 'Open Login Items settings?' open_login_items_settings
 
-section 'Launcher'
-run_step 'Build HackermacLauncher.app?' "$ROOT/scripts/build-launcher-app.sh"
-run_step 'Restart HackermacLauncher now?' "$ROOT/scripts/restart-launcher.sh"
-run_step 'Install HackermacLauncher launch-at-login item?' "$ROOT/scripts/launcher-login.sh" install
-
 section 'Optional Ice cleanup'
 run_step 'Open Ice and configure visible menu-bar items?' open_ice
 
@@ -124,4 +119,4 @@ section 'Next checks'
 run_step 'Run drift check after onboarding?' "$ROOT/scripts/check-drift.sh"
 run_step 'Run verification suite?' "$ROOT/scripts/verify.sh"
 
-printf '\nOnboarding finished. Reopen HackermacLauncher with Option+Space after it is running.\n'
+printf '\nOnboarding finished.\n'

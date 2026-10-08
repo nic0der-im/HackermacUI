@@ -2,7 +2,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PLUGIN_DIR="$(defaults read com.ameba.SwiftBar PluginDirectory 2>/dev/null || echo "$HOME/SwiftBarPlugins")"
+# shellcheck source=lib/swiftbar-plugin-dir.sh
+source "$ROOT/scripts/lib/swiftbar-plugin-dir.sh"
+PLUGIN_DIR="$(swiftbar_plugin_dir)"
 STATE_DIR="$HOME/.hackermacui"
 LIVE_PROFILE_FILE="$STATE_DIR/live-profile"
 RENDER_DIR="$STATE_DIR/rendered"
@@ -23,6 +25,10 @@ profile_name() {
 
 render_profile() {
   local profile="$1" profile_dir
+  if [[ ! "$profile" =~ ^[A-Za-z0-9_-]+$ ]]; then
+    printf 'Invalid HackermacUI profile name: %s\n' "$profile" >&2
+    exit 1
+  fi
   profile_dir="$ROOT/configs/templates/profiles/$profile"
   if [[ ! -f "$profile_dir/aerospace.toml" || ! -f "$profile_dir/profile.env" ]]; then
     printf 'Invalid HackermacUI profile: %s\n' "$profile" >&2
@@ -100,5 +106,6 @@ check_dir "SwiftBar plugins" "$ROOT/configs/swiftbar/plugins" "$PLUGIN_DIR"
 check_file "JankyBorders" "$ROOT/configs/borders/bordersrc" "$HOME/.config/borders/bordersrc"
 check_file "Ghostty" "$ROOT/configs/ghostty/config" "$HOME/.config/ghostty/config"
 check_file "Fastfetch" "$ROOT/configs/fastfetch/config.json" "$HOME/.config/fastfetch/config.json"
+check_file "Theme palette" "$ROOT/configs/theme/palette.env" "$HOME/.config/hackermacui/theme/palette.env"
 
 exit "$status"

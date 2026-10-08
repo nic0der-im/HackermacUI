@@ -35,6 +35,10 @@ profile_path() {
 
 require_profile() {
   local profile="$1" path
+  if [[ ! "$profile" =~ ^[A-Za-z0-9_-]+$ ]]; then
+    printf 'Invalid profile name: %s\n' "$profile" >&2
+    exit 1
+  fi
   path="$(profile_path "$profile")"
   if [[ ! -d "$path" ]]; then
     printf 'Unknown profile: %s\n' "$profile" >&2
@@ -52,9 +56,6 @@ render_profile() {
   path="$(profile_path "$profile")"
   cp "$path/aerospace.toml" "$ROOT/configs/aerospace/aerospace.toml"
   cp "$path/profile.env" "$ROOT/configs/aerospace/scripts/profile.env"
-  if [[ -f "$path/launcher.menu.json" ]]; then
-    cp "$path/launcher.menu.json" "$ROOT/configs/launcher/menu.json"
-  fi
   printf '%s\n' "$profile" >"$CURRENT_FILE"
   printf 'Rendered profile: %s\n' "$profile"
 }

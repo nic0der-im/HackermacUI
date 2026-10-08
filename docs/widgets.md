@@ -26,7 +26,7 @@ When image mode is enabled, icon extraction, base64 output, and the final compos
 | Decision | Current state |
 |---|---|
 | Default plugins | `00-hackermacui.3s.sh` only. |
-| Interaction model | PNG strip in the menu bar; dropdown is limited to small HackermacUI maintenance links. Command-center actions belong in HackermacLauncher. |
+| Interaction model | PNG strip in the menu bar; dropdown is limited to small HackermacUI maintenance links. |
 | Refresh path | AeroSpace workspace keys and `exec-on-workspace-change` trigger immediate SwiftBar refreshes; the 3s interval is fallback. |
 | Rendering | Cached composite PNG by default. Text mode remains available via `AEROSPACE_SWIFTBAR_RENDER_MODE=text`. |
 | Performance | State-hash invalidation for the workspace strip, cached composite PNGs, and cached base64 output. |

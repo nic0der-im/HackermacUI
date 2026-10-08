@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ASSUME_YES=0
 if [[ "${1:-}" == "--yes" ]]; then
   ASSUME_YES=1
@@ -27,18 +28,15 @@ need_brew() {
 need_brew
 
 if confirm 'Install HackermacUI core Homebrew dependencies?'; then
-  brew install --cask nikitabobko/tap/aerospace swiftbar ghostty
-  brew tap FelixKratz/formulae
-  brew install borders gh fzf atuin zoxide zsh-autosuggestions zsh-syntax-highlighting fastfetch bat ripgrep
+  brew bundle --file "$ROOT/Brewfile"
 fi
 
 if confirm 'Install optional local development tools?'; then
-  brew install lazygit lazydocker node pnpm go redis postgresql@16 postgresql@18
-  brew install --cask orbstack
+  brew bundle --file "$ROOT/Brewfile.dev"
 fi
 
 if confirm 'Install optional Ice menu-bar hider?'; then
-  brew install --cask jordanbaird-ice
+  brew bundle --file "$ROOT/Brewfile.extras"
 fi
 
 printf 'Dependency install finished. Run ./scripts/doctor.sh next.\n'

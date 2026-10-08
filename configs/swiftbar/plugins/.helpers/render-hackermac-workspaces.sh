@@ -1,6 +1,6 @@
 #!/bin/bash
 # <xbar.title>AeroSpace Workspaces</xbar.title>
-# <xbar.version>v3.0.0</xbar.version>
+# <xbar.version>v3.1.0</xbar.version>
 # <xbar.author>Ignacio Medina</xbar.author>
 # <xbar.desc>AeroSpace workspace strip rendered as a cached Waybar-like image.</xbar.desc>
 # <xbar.dependencies>aerospace,bash,awk,sort,paste,sips,base64,osascript</xbar.dependencies>
@@ -24,16 +24,20 @@ if [[ -z "${AEROSPACE:-}" ]]; then
   fi
 fi
 SCRIPT_PATH="${SWIFTBAR_PLUGIN_PATH:-$0}"
-SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+SCRIPT_DIR="${SCRIPT_PATH%/*}"
+[[ -z "$SCRIPT_DIR" || "$SCRIPT_DIR" == "$SCRIPT_PATH" ]] && SCRIPT_DIR="."
+SCRIPT_DIR="$(cd "$SCRIPT_DIR" 2>/dev/null && pwd)"
 PROFILE_ENV="${HACKERMACUI_PROFILE_ENV:-$HOME/.config/aerospace/scripts/profile.env}"
-REPO_PROFILE_ENV="$(cd "$SCRIPT_DIR/../../../.." 2>/dev/null && pwd)/configs/aerospace/scripts/profile.env"
 
 if [[ -f "$PROFILE_ENV" ]]; then
   # shellcheck disable=SC1090
   source "$PROFILE_ENV"
-elif [[ -f "$REPO_PROFILE_ENV" ]]; then
-  # shellcheck disable=SC1090
-  source "$REPO_PROFILE_ENV"
+else
+  REPO_PROFILE_ENV="$(cd "$SCRIPT_DIR/../../../.." 2>/dev/null && pwd)/configs/aerospace/scripts/profile.env"
+  if [[ -f "$REPO_PROFILE_ENV" ]]; then
+    # shellcheck disable=SC1090
+    source "$REPO_PROFILE_ENV"
+  fi
 fi
 
 WORKSPACES="${AEROSPACE_SWIFTBAR_WORKSPACES:-${HACKERMACUI_WORKSPACES:-1 2 3 4}}"
@@ -54,10 +58,11 @@ STRIP_STATE_FILE="$CACHE_ROOT/strip-state.tsv"
 STRIP_B64_FILE="$CACHE_ROOT/strip.b64"
 STRIP_KEY_FILE="$CACHE_ROOT/strip.key"
 RENDERER="$SCRIPT_DIR/render-workspace-strip.jxa"
+# Bump when the strip layout changes so cached strips are not reused across versions.
+STRIP_FORMAT_VERSION="3.1"
 
 GREEN="#82FB9C"
 MUTED="#8A8F98"
-FG="#E6EDF3"
 WARN="#F6C177"
 ERROR="#FF5F57"
 
@@ -72,7 +77,7 @@ MV="/bin/mv"
 SLEEP="/bin/sleep"
 
 if [[ "$TIMEOUT_TICKS" =~ ^[0-9]+$ ]]; then
-  TIMEOUT_SECONDS="$(awk -v ticks="$TIMEOUT_TICKS" 'BEGIN { printf "%.2f", ticks / 10 }')"
+  TIMEOUT_SECONDS="$((TIMEOUT_TICKS / 10)).$((TIMEOUT_TICKS % 10))0"
 else
   TIMEOUT_SECONDS="1.50"
 fi
@@ -84,25 +89,33 @@ if [[ ! -x "$AEROSPACE" ]]; then
   exit 0
 fi
 
-mkdir -p "$CACHE_ROOT" "$ICON_CACHE_ROOT" "$STRIP_CACHE_ROOT" 2>/dev/null || true
+# Runtime state shared by the functions below.
+focused=""
+filtered_window_lines=""
+state_blob=""
+renderer_mtime="0"
+bundle_paths=()
+icon_memo=""
 
 render_cached_or_busy() {
   if [[ -s "$CACHE_FILE" ]]; then
-    cat "$CACHE_FILE"
+    local line
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      printf '%s\n' "$line"
+    done <"$CACHE_FILE"
   else
     echo "WS … | color=$WARN font=Menlo size=12"
   fi
 }
 
 acquire_render_lock() {
-  local attempt
 
   if mkdir "$LOCK_DIR" 2>/dev/null; then
     trap 'rm -rf "$LOCK_DIR"' EXIT INT TERM
     return 0
   fi
 
-  for attempt in 1 2 3 4 5; do
+  for _ in 1 2 3 4 5; do
     "$SLEEP" 0.05
     if mkdir "$LOCK_DIR" 2>/dev/null; then
       trap 'rm -rf "$LOCK_DIR"' EXIT INT TERM
@@ -123,6 +136,17 @@ aerospace_capture() {
   ' "$TIMEOUT_SECONDS" "$AEROSPACE" "$@" 2>/dev/null
 }
 
+file_mtime() {
+  [[ -e "$1" ]] && stat -f '%m' "$1" 2>/dev/null || printf '0'
+}
+
+cache_key() {
+  local sum
+
+  sum="$(printf '%s' "$1" | cksum)"
+  printf '%s' "${sum%% *}"
+}
+
 app_icon() {
   case "$1" in
     "Ghostty"|"Terminal"|"iTerm2"|"Alacritty"|"WezTerm") printf '⌘' ;;
@@ -138,35 +162,46 @@ app_icon() {
   esac
 }
 
+# Records are "app|bundle" for one window each, filtered to a single workspace.
 workspace_app_records() {
-  local ws="$1"
-  printf '%s\n' "$filtered_window_lines" \
-    | awk -F '|' -v ws="$ws" '$1 == ws { print $2 "|" $3 }'
+  local ws="$1" line rest
+
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    [[ "${line%%|*}" == "$ws" ]] || continue
+    rest="${line#*|}"
+    printf '%s|%s\n' "${rest%%|*}" "${rest#*|}"
+  done <<<"$filtered_window_lines"
 }
 
 workspace_apps() {
-  local ws="$1"
-  workspace_app_records "$ws" | awk -F '|' '{ print $1 }'
-}
+  local line
 
-cache_key() {
-  printf '%s' "$1" | cksum | awk '{ print $1 }'
+  while IFS= read -r line; do
+    printf '%s\n' "${line%%|*}"
+  done < <(workspace_app_records "$1")
 }
 
 bundle_icon_source() {
   local bundle_path="$1"
-  local plist plist_mtime cached_source cached_plist_mtime icon source fallback tmp_cache
+  local plist plist_mtime cached_source cached_plist_mtime icon source fallback line
 
   [[ -n "$bundle_path" && -d "$bundle_path" ]] || return 1
   plist="$bundle_path/Contents/Info.plist"
   [[ -f "$plist" && -x "$PLISTBUDDY" ]] || return 1
   plist_mtime="$(file_mtime "$plist")"
 
+  cached_source=""
+  cached_plist_mtime=""
   if [[ -s "$ICON_SOURCE_CACHE_FILE" ]]; then
-    IFS=$'\t' read -r cached_source cached_plist_mtime < <(
-      awk -F '\t' -v bundle_path="$bundle_path" '$1 == bundle_path { print $2 "\t" $3; exit }' "$ICON_SOURCE_CACHE_FILE"
-    )
-    if [[ -n "${cached_source:-}" && -f "$cached_source" && "${cached_plist_mtime:-}" == "$plist_mtime" ]]; then
+    while IFS= read -r line; do
+      [[ "${line%%$'\t'*}" == "$bundle_path" ]] || continue
+      line="${line#*$'\t'}"
+      cached_source="${line%%$'\t'*}"
+      cached_plist_mtime="${line#*$'\t'}"
+      break
+    done <"$ICON_SOURCE_CACHE_FILE"
+    if [[ -n "$cached_source" && -f "$cached_source" && "$cached_plist_mtime" == "$plist_mtime" ]]; then
       printf '%s' "$cached_source"
       return 0
     fi
@@ -177,70 +212,69 @@ bundle_icon_source() {
     [[ "$icon" == *.* ]] || icon="$icon.icns"
     source="$bundle_path/Contents/Resources/$icon"
     if [[ -f "$source" ]]; then
-      tmp_cache="$ICON_SOURCE_CACHE_FILE.$$"
-      awk -F '\t' -v bundle_path="$bundle_path" '$1 != bundle_path { print }' "$ICON_SOURCE_CACHE_FILE" 2>/dev/null >"$tmp_cache" || true
-      printf '%s\t%s\t%s\n' "$bundle_path" "$source" "$plist_mtime" >>"$tmp_cache"
-      "$MV" "$tmp_cache" "$ICON_SOURCE_CACHE_FILE" 2>/dev/null || true
+      write_icon_source_cache "$bundle_path" "$source" "$plist_mtime"
       printf '%s' "$source"
       return 0
     fi
   fi
 
-  fallback="$(printf '%s\n' "$bundle_path"/Contents/Resources/*.icns 2>/dev/null | awk 'NR == 1 { print }')"
-  [[ -f "$fallback" ]] || return 1
-  tmp_cache="$ICON_SOURCE_CACHE_FILE.$$"
-  awk -F '\t' -v bundle_path="$bundle_path" '$1 != bundle_path { print }' "$ICON_SOURCE_CACHE_FILE" 2>/dev/null >"$tmp_cache" || true
-  printf '%s\t%s\t%s\n' "$bundle_path" "$fallback" "$plist_mtime" >>"$tmp_cache"
-  "$MV" "$tmp_cache" "$ICON_SOURCE_CACHE_FILE" 2>/dev/null || true
+  fallback=""
+  for line in "$bundle_path"/Contents/Resources/*.icns; do
+    [[ -e "$line" ]] && { fallback="$line"; break; }
+  done
+  [[ -n "$fallback" ]] || return 1
+  write_icon_source_cache "$bundle_path" "$fallback" "$plist_mtime"
   printf '%s' "$fallback"
 }
 
+write_icon_source_cache() {
+  local bundle_path="$1" source="$2" plist_mtime="$3" tmp_cache line
+
+  tmp_cache="$ICON_SOURCE_CACHE_FILE.$$"
+  : >"$tmp_cache" || return 1
+  while IFS= read -r line; do
+    [[ "${line%%$'\t'*}" == "$bundle_path" ]] && continue
+    printf '%s\n' "$line" >>"$tmp_cache"
+  done <"$ICON_SOURCE_CACHE_FILE" 2>/dev/null
+  printf '%s\t%s\t%s\n' "$bundle_path" "$source" "$plist_mtime" >>"$tmp_cache"
+  "$MV" "$tmp_cache" "$ICON_SOURCE_CACHE_FILE" 2>/dev/null || true
+}
+
+# Icon PNGs are memoized per run: the same app repeats for every window it owns.
 icon_png() {
-  local app_name="$1"
-  local bundle_path="$2"
-  local source key png
+  local app_name="$1" bundle_path="$2"
+  local source key png memo_key
 
   [[ "$REAL_ICONS" == "1" ]] || return 1
   [[ -x "$SIPS" ]] || return 1
 
-  source="$(bundle_icon_source "$bundle_path")" || return 1
+  memo_key="$app_name"$'\t'"$bundle_path"
+  case "$icon_memo" in
+    *$'\n'"$memo_key"$'\t'*)
+      png="${icon_memo#*$'\n'"$memo_key"$'\t'}"
+      png="${png%%$'\n'*}"
+      [[ "$png" == "-" ]] && return 1
+      printf '%s' "$png"
+      return 0
+      ;;
+  esac
+
+  if ! source="$(bundle_icon_source "$bundle_path")"; then
+    icon_memo="$icon_memo"$'\n'"$memo_key"$'\t-'
+    return 1
+  fi
   key="$(cache_key "$bundle_path|$source")"
   png="$ICON_CACHE_ROOT/$key.png"
 
   if [[ ! -s "$png" || "$source" -nt "$png" ]]; then
-    "$SIPS" -s format png --resampleWidth 36 "$source" --out "$png" >/dev/null 2>&1 || return 1
+    if ! "$SIPS" -s format png --resampleWidth 36 "$source" --out "$png" >/dev/null 2>&1; then
+      icon_memo="$icon_memo"$'\n'"$memo_key"$'\t-'
+      return 1
+    fi
   fi
 
+  icon_memo="$icon_memo"$'\n'"$memo_key"$'\t'"$png"
   printf '%s' "$png"
-}
-
-file_mtime() {
-  [[ -e "$1" ]] && stat -f '%m' "$1" 2>/dev/null || printf '0'
-}
-
-icon_base64() {
-  local png
-
-  [[ -x "$BASE64" ]] || return 1
-  png="$(icon_png "$1" "$2")" || return 1
-  "$BASE64" <"$png" | tr -d '\n'
-}
-
-workspace_icons() {
-  local ws="$1"
-  local app count out icon
-
-  count=0
-  out=""
-  while IFS= read -r app; do
-    [[ -z "$app" ]] && continue
-    icon="$(app_icon "$app")"
-    out="$out$icon"
-    count=$((count + 1))
-    (( count >= MAX_ICONS_PER_WORKSPACE )) && break
-  done < <(workspace_apps "$ws")
-
-  printf '%s' "$out"
 }
 
 write_strip_state() {
@@ -273,21 +307,75 @@ write_strip_state() {
   return 0
 }
 
+# One AeroSpace round trip: workspace|is-focused|app|bundle|title per window.
+refresh_workspace_state() {
+  local raw meta tag value
+
+  raw="$(aerospace_capture list-windows --all --format '%{workspace}|%{workspace-is-focused}|%{app-name}|%{app-bundle-path}|%{window-title}')" || return 1
+
+  filtered_window_lines="$(printf '%s\n' "$raw" | awk -F '|' '$3 != "" && $5 != "Dictation" { print $1 "|" $3 "|" $4 }')"
+  meta="$(printf '%s\n' "$raw" | awk -F '|' '
+    $3 != "" && $5 != "Dictation" {
+      if ($2 == "true") focus = $1
+      if (!seen[$4]++) print "P\t" $4
+    }
+    END { print "F\t" focus }')"
+
+  focused=""
+  bundle_paths=()
+  while IFS=$'\t' read -r tag value; do
+    case "$tag" in
+      P) [[ -n "$value" ]] && bundle_paths+=("$value") ;;
+      F) focused="$value" ;;
+    esac
+  done <<<"$meta"
+
+  if [[ -z "$focused" ]]; then
+    focused="$(aerospace_capture list-workspaces --focused 2>/dev/null | awk 'NR == 1 { print }')" || focused=""
+  fi
+
+  build_state_blob
+}
+
+# Everything the rendered strip depends on: workspace/app layout, the focused
+# workspace, icon sources (app bundle mtimes), renderer and format version.
+build_state_blob() {
+  local bundle plist
+
+  state_blob="$STRIP_FORMAT_VERSION
+$focused
+$filtered_window_lines
+$renderer_mtime
+$EMPTY_LABEL
+$WORKSPACES|$MAX_ICONS_PER_WORKSPACE|$REAL_ICONS|$COMPACT_MODE"
+  for bundle in "${bundle_paths[@]:-}"; do
+    [[ -n "$bundle" ]] || continue
+    plist="$bundle/Contents/Info.plist"
+    [[ -f "$plist" ]] || plist="$bundle"
+    state_blob="$state_blob
+$bundle=$(file_mtime "$plist")"
+  done
+}
+
+# Fast path: the strip image is still valid for the current state.
+cached_strip_b64() {
+  local b64
+
+  [[ -s "$STRIP_B64_FILE" && -s "$STRIP_KEY_FILE" ]] || return 1
+  [[ "$state_blob" == "$(<"$STRIP_KEY_FILE")" ]] || return 1
+  b64="$(<"$STRIP_B64_FILE")"
+  [[ -n "$b64" ]] || return 1
+  printf '%s' "${b64//$'\n'/}"
+}
+
+# Slow path: only reached when the state changed. Callers hold the render lock.
 strip_image_base64() {
-  local key png renderer_mtime cached_key tmp_b64 tmp_key
+  local key png tmp_b64 b64
 
   [[ -x "$OSASCRIPT" && -x "$BASE64" && -f "$RENDERER" ]] || return 1
   write_strip_state || return 1
-  renderer_mtime="$(file_mtime "$RENDERER")"
   key="$(cksum <"$STRIP_STATE_FILE" | awk -v renderer_mtime="$renderer_mtime" '{ print $1 "-" $2 "-" renderer_mtime }')"
   png="$STRIP_CACHE_ROOT/$key.png"
-
-  cached_key=""
-  [[ -s "$STRIP_KEY_FILE" ]] && cached_key="$(tr -d '\n' <"$STRIP_KEY_FILE")"
-  if [[ "$cached_key" == "$key" && -s "$STRIP_B64_FILE" ]]; then
-    tr -d '\n' <"$STRIP_B64_FILE"
-    return 0
-  fi
 
   if [[ ! -s "$png" ]]; then
     "$OSASCRIPT" -l JavaScript "$RENDERER" "$STRIP_STATE_FILE" "$png" "$EMPTY_LABEL" >/dev/null 2>&1 || return 1
@@ -296,11 +384,12 @@ strip_image_base64() {
 
   [[ -s "$png" ]] || return 1
   tmp_b64="$STRIP_B64_FILE.$$"
-  tmp_key="$STRIP_KEY_FILE.$$"
-  "$BASE64" <"$png" | tr -d '\n' >"$tmp_b64" || return 1
+  "$BASE64" <"$png" >"$tmp_b64" || return 1
   "$MV" "$tmp_b64" "$STRIP_B64_FILE" || return 1
-  printf '%s' "$key" >"$tmp_key" && "$MV" "$tmp_key" "$STRIP_KEY_FILE" || true
-  tr -d '\n' <"$STRIP_B64_FILE"
+  printf '%s' "$state_blob" >"$STRIP_KEY_FILE.$$" && "$MV" "$STRIP_KEY_FILE.$$" "$STRIP_KEY_FILE" || true
+
+  b64="$(<"$STRIP_B64_FILE")"
+  printf '%s' "${b64//$'\n'/}"
 }
 
 prune_strip_cache() {
@@ -317,6 +406,23 @@ prune_strip_cache() {
   while IFS= read -r file; do
     [[ -n "$file" ]] && "$RM" -f "$file"
   done <<<"$excess"
+}
+
+workspace_icons() {
+  local ws="$1"
+  local app count out icon
+
+  count=0
+  out=""
+  while IFS= read -r app; do
+    [[ -z "$app" ]] && continue
+    icon="$(app_icon "$app")"
+    out="$out$icon"
+    count=$((count + 1))
+    (( count >= MAX_ICONS_PER_WORKSPACE )) && break
+  done < <(workspace_apps "$ws")
+
+  printf '%s' "$out"
 }
 
 workspace_title_segment() {
@@ -348,17 +454,21 @@ render_title() {
 render_current() {
   local strip_image
 
-  focused="$(aerospace_capture list-workspaces --focused | awk 'NR == 1 { print }')" || return 1
-  window_lines="$(aerospace_capture list-windows --all --format '%{workspace}|%{app-name}|%{app-bundle-path}|%{window-title}')" || return 1
-  filtered_window_lines="$(printf '%s\n' "$window_lines" | awk -F '|' '$2 != "" && $4 != "Dictation" { print $1 "|" $2 "|" $3 }')"
+  refresh_workspace_state || return 1
 
   if [[ "$RENDER_MODE" == "image" ]]; then
-    strip_image="$(strip_image_base64)" || true
+    strip_image="$(cached_strip_b64)" || strip_image=""
+    if [[ -z "$strip_image" ]]; then
+      acquire_render_lock || return 2
+      strip_image="$(strip_image_base64)" || strip_image=""
+    fi
+    if [[ -n "$strip_image" ]]; then
+      printf '  | image=%s trim=false\n' "$strip_image"
+      return 0
+    fi
   fi
 
-  if [[ "$RENDER_MODE" == "image" && -n "$strip_image" ]]; then
-    echo "  | image=$strip_image trim=false"
-  elif [[ "$COMPACT_MODE" == "1" ]]; then
+  if [[ "$COMPACT_MODE" == "1" ]]; then
     echo "WS $focused | color=$GREEN font=Menlo size=12"
   else
     echo "$(render_title) | color=$GREEN font=Menlo size=12"
@@ -379,16 +489,24 @@ render_stale() {
   fi
 }
 
-if ! acquire_render_lock; then
-  render_cached_or_busy
-  exit 0
+renderer_mtime="$(file_mtime "$RENDERER")"
+if [[ ! -d "$CACHE_ROOT" || ! -d "$ICON_CACHE_ROOT" || ! -d "$STRIP_CACHE_ROOT" ]]; then
+  mkdir -p "$CACHE_ROOT" "$ICON_CACHE_ROOT" "$STRIP_CACHE_ROOT" 2>/dev/null || true
 fi
 
-if output="$(render_current)"; then
+output="$(render_current)"
+render_status=$?
+if [[ "$render_status" -eq 0 ]]; then
   printf '%s\n' "$output"
   if [[ -d "$CACHE_ROOT" ]]; then
-    printf '%s\n' "$output" >"$CACHE_FILE.$$" && "$MV" "$CACHE_FILE.$$" "$CACHE_FILE"
+    cached_menu=""
+    [[ -s "$CACHE_FILE" ]] && cached_menu="$(<"$CACHE_FILE")"
+    if [[ "$output" != "$cached_menu" ]]; then
+      printf '%s\n' "$output" >"$CACHE_FILE.$$" && "$MV" "$CACHE_FILE.$$" "$CACHE_FILE"
+    fi
   fi
+elif [[ "$render_status" -eq 2 ]]; then
+  render_cached_or_busy
 else
   render_stale
 fi

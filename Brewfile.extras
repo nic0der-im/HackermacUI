@@ -1,0 +1,7 @@
+# HackermacUI Brewfile — optional menu-bar cleanup
+#
+# Installed separately from the core stack:
+#
+#   brew bundle --file Brewfile.extras
+
+cask "jordanbaird-ice"

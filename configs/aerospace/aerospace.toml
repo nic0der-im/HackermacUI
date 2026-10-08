@@ -5,7 +5,7 @@
 config-version = 2
 
 # Launch visual focus borders with AeroSpace. The bordersrc also works standalone.
-after-startup-command = ['exec-and-forget /bin/bash -lc "$HOME/.config/borders/bordersrc"']
+after-startup-command = ['exec-and-forget /bin/bash -c "$HOME/.config/borders/bordersrc"']
 
 start-at-login = true
 
@@ -18,7 +18,7 @@ default-root-container-orientation = 'auto'
 
 # Keep macOS Separate Spaces enabled; avoid native fullscreen as the tiling path.
 on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
-exec-on-workspace-change = ['/bin/bash', '-lc', '/bin/bash "$HOME/.config/aerospace/scripts/refresh-swiftbar-workspaces.sh" 00-hackermacui.3s.sh']
+exec-on-workspace-change = ['/bin/bash', '-c', '/bin/bash "$HOME/.config/aerospace/scripts/refresh-swiftbar-workspaces.sh" 00-hackermacui.3s.sh']
 automatically-unhide-macos-hidden-apps = false
 
 # Public default: four persistent workspaces with no forced monitor names.
@@ -82,10 +82,6 @@ persistent-workspaces = ['1', '2', '3', '4']
     if.app-id = 'com.apple.AccessibilityUIServer'
     run = ['layout floating']
 
-[[on-window-detected]]
-    if.app-name-regex-substring = 'HackermacLauncher'
-    run = ['layout floating']
-
 # Steam uses helper windows for the main client and most popups. Keep them
 # floating so chats, settings, login prompts, and dialogs don't break tiling.
 [[on-window-detected]]
@@ -119,10 +115,10 @@ persistent-workspaces = ['1', '2', '3', '4']
     # App launchers.
     cmd-enter = 'exec-and-forget open -na Ghostty'
     cmd-b = 'exec-and-forget open -na "Google Chrome"'
-    cmd-shift-f = 'exec-and-forget /bin/bash -lc "$HOME/.config/aerospace/scripts/finder-new-window"'
+    cmd-shift-f = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/finder-new-window"'
     cmd-o = 'exec-and-forget open -na Obsidian'
-    cmd-d = 'exec-and-forget /bin/bash -lc "open -na Ghostty --args -e lazydocker"'
-    cmd-shift-a = 'exec-and-forget /bin/bash -lc "$HOME/.config/aerospace/scripts/launch-opencode.sh"'
+    cmd-d = 'exec-and-forget /bin/bash -c "open -na Ghostty --args -e lazydocker"'
+    cmd-shift-a = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/launch-opencode.sh"'
 
     # Focus.
     alt-left = 'focus left'
@@ -149,23 +145,24 @@ persistent-workspaces = ['1', '2', '3', '4']
     alt-4 = 'workspace 4'
 
     # Send focused window away without following it.
-    alt-ctrl-1 = 'move-node-to-workspace 1'
-    alt-ctrl-2 = 'move-node-to-workspace 2'
-    alt-ctrl-3 = 'move-node-to-workspace 3'
-    alt-ctrl-4 = 'move-node-to-workspace 4'
+    alt-ctrl-1 = ['move-node-to-workspace 1', 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/refresh-swiftbar-workspaces.sh 00-hackermacui.3s.sh"']
+    alt-ctrl-2 = ['move-node-to-workspace 2', 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/refresh-swiftbar-workspaces.sh 00-hackermacui.3s.sh"']
+    alt-ctrl-3 = ['move-node-to-workspace 3', 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/refresh-swiftbar-workspaces.sh 00-hackermacui.3s.sh"']
+    alt-ctrl-4 = ['move-node-to-workspace 4', 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/refresh-swiftbar-workspaces.sh 00-hackermacui.3s.sh"']
 
     # Tiling controls.
     alt-shift-f = 'fullscreen'
     alt-shift-space = 'layout floating tiling'
     alt-slash = 'layout tiles horizontal vertical'
     alt-comma = 'layout accordion horizontal vertical'
-    alt-tab = 'exec-and-forget /bin/bash -lc "$HOME/.config/aerospace/scripts/next-active-workspace.sh"'
+    alt-tab = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/next-active-workspace.sh"'
 
     # Service mode for rarely used/destructive operations.
     alt-shift-semicolon = 'mode service'
 
 [mode.service.binding]
-    esc = ['reload-config', 'mode main']
+    esc = ['mode main']
+    shift-r = ['reload-config', 'mode main']
     r = ['flatten-workspace-tree', 'mode main']
     f = ['layout floating tiling', 'mode main']
     b = ['balance-sizes', 'mode main']

@@ -17,8 +17,10 @@ set -uo pipefail
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin${PATH:+:$PATH}"
 
 SCRIPT_PATH="${SWIFTBAR_PLUGIN_PATH:-$0}"
-SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+SCRIPT_DIR="${SCRIPT_PATH%/*}"
+[[ -z "$SCRIPT_DIR" || "$SCRIPT_DIR" == "$SCRIPT_PATH" ]] && SCRIPT_DIR="."
+SCRIPT_DIR="$(cd "$SCRIPT_DIR" 2>/dev/null && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." 2>/dev/null && pwd)"
 RENDER_HELPER="$SCRIPT_DIR/.helpers/render-hackermac-workspaces.sh"
 
 GREEN="#82FB9C"
@@ -34,7 +36,7 @@ render_header() {
   fi
 
   output="$(SWIFTBAR_PLUGIN_PATH="$RENDER_HELPER" AEROSPACE_SWIFTBAR_RENDER_MODE=image AEROSPACE_SWIFTBAR_COMPACT=1 "$RENDER_HELPER" 2>/dev/null)" || output=""
-  title="$(printf '%s\n' "$output" | awk 'NR == 1 { print; exit }')"
+  title="${output%%$'\n'*}"
 
   if [[ -n "$title" ]]; then
     printf '%s\n' "$title"
@@ -55,3 +57,4 @@ render_dropdown() {
 
 render_header
 render_dropdown
+

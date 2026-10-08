@@ -41,6 +41,23 @@ for optional in fzf atuin zoxide lazygit lazydocker node pnpm go redis-server po
 done
 
 echo
+echo "== Fonts =="
+if command -v fc-list >/dev/null 2>&1; then
+  if fc-list | grep -qi 'jetbrainsmono nerd font'; then
+    pass "JetBrainsMono Nerd Font found"
+  else
+    warn "JetBrainsMono Nerd Font not found (used by configs/ghostty/config)"
+  fi
+else
+  if compgen -G "$HOME/Library/Fonts/*[Jj]et[Bb]rains*[Nn]erd*" >/dev/null 2>&1 \
+    || compgen -G "/Library/Fonts/*[Jj]et[Bb]rains*[Nn]erd*" >/dev/null 2>&1; then
+    pass "JetBrainsMono Nerd Font found"
+  else
+    warn "JetBrainsMono Nerd Font not found (used by configs/ghostty/config)"
+  fi
+fi
+
+echo
 echo "== Required apps =="
 need_app AeroSpace
 need_app SwiftBar

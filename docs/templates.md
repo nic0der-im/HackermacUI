@@ -12,8 +12,6 @@ Templates let HackermacUI swap desktop layouts without changing tool ownership.
 ./scripts/apply.sh
 ```
 
-The Launcher exposes the live-profile flow under `Profiles`.
-
 ## Profiles
 
 | Profile | Purpose |
@@ -27,7 +25,6 @@ The Launcher exposes the live-profile flow under `Profiles`.
 |---|---|
 | `configs/templates/profiles/<name>/aerospace.toml` | `configs/aerospace/aerospace.toml` |
 | `configs/templates/profiles/<name>/profile.env` | `configs/aerospace/scripts/profile.env` |
-| `configs/templates/profiles/<name>/launcher.menu.json` | `configs/launcher/menu.json` |
 
 `render` and `switch` mutate repo config files. Use them when changing what the repository publishes.
 

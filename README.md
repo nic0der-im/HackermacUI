@@ -1,6 +1,6 @@
 # HackermacUI
 
-HackermacUI is a public, curated macOS desktop environment. It is inspired by the clarity of Linux rice setups and Omarchy-style command flows, but it stays native to macOS: AeroSpace owns tiling, HackermacLauncher owns command execution, SwiftBar owns the menu-bar surface, JankyBorders owns focus feedback, and Ghostty owns the terminal feel.
+HackermacUI is a public, curated macOS desktop environment. It is inspired by the clarity of Linux rice setups and Omarchy-style command flows, but it stays native to macOS: AeroSpace owns tiling, SwiftBar owns the menu-bar surface, JankyBorders owns focus feedback, and Ghostty owns the terminal feel.
 
 This repository is not a raw machine backup. It contains reusable dotfiles, native tools, scripts, and documentation that describe how the desktop works. Private state, credentials, local snapshots, logs, and machine-specific overlays stay out of git.
 
@@ -11,7 +11,6 @@ Use these placeholders for public screenshots once the final look is stable.
 | Area | Placeholder | What to show |
 |---|---|---|
 | Full desktop | `assets/screenshots/desktop-overview.png` | Tiled windows, menu bar, Ghostty, and focus border in one shot. |
-| Launcher | `assets/screenshots/launcher-root.png` | HackermacLauncher opened with `Option+Space`. |
 | Workspace strip | `assets/screenshots/swiftbar-workspaces.png` | SwiftBar workspace strip with active workspace and app icons. |
 | Terminal | `assets/screenshots/ghostty-terminal.png` | Ghostty glass theme and developer shell. |
 | Config flow | `assets/screenshots/config-flow.png` | Repo config, status, backup, and drift-check workflow. |
@@ -37,7 +36,6 @@ The project should transmit three ideas:
 ```txt
 Keyboard shortcuts
   -> AeroSpace manages workspaces, focus, movement, floating rules, and app launch shortcuts
-  -> HackermacLauncher opens command menus and runs declarative actions
 
 AeroSpace workspace events
   -> refresh-swiftbar-workspaces.sh
@@ -56,20 +54,19 @@ Repo configs
   -> scripts/template.sh swaps selected profile templates
 ```
 
-The important design constraint is ownership. AeroSpace is the window manager. SwiftBar is not a second command center. HackermacLauncher is not a status bar. JankyBorders does not manage windows. Ghostty does not define global desktop behavior.
+The important design constraint is ownership. AeroSpace is the window manager. SwiftBar is the menu-bar status surface, not a second window manager. JankyBorders does not manage windows. Ghostty does not define global desktop behavior.
 
 ## Runtime Stack
 
 | Layer | Project | Role in HackermacUI |
 |---|---|---|
-| Tiling and workspaces | AeroSpace | Manages public four-workspace default plus swappable profile templates, keyboard focus, movement, gaps, floating rules, and app launcher shortcuts. |
-| Command center | HackermacLauncher | Native Swift launcher for menus, workspace actions, app opening, install helpers, config shortcuts, and Ghostty entrypoints. |
+| Tiling and workspaces | AeroSpace | Manages public four-workspace default plus swappable profile templates, keyboard focus, movement, gaps, floating rules, and app shortcuts. |
 | Menu-bar widgets | SwiftBar | Hosts the native workspace strip plugin in the real macOS menu bar. |
 | Workspace widget | `00-hackermacui.3s.sh` | Custom SwiftBar plugin that renders a compact workspace strip from AeroSpace state. |
 | Focus border | JankyBorders / `borders` | Draws a 3px active-window gradient border while leaving inactive borders transparent. |
 | Terminal | Ghostty | Provides the glass terminal, quick terminal, tab behavior, splits, and shell entrypoints. |
 | Shell helpers | zsh, fzf, atuin, zoxide | Gives the terminal workflow fast history, navigation, completion, and shell ergonomics. |
-| Local dev tools | OrbStack, PostgreSQL, Redis, pnpm, Node.js, Go, gh, lazygit, lazydocker | Optional development environment tools surfaced through config, launcher actions, or shell workflows. |
+| Local dev tools | OrbStack, PostgreSQL, Redis, pnpm, Node.js, Go, gh, lazygit, lazydocker | Optional development environment tools surfaced through config or shell workflows. |
 | Menu-bar cleanup | Ice | Optional user chrome for hiding unrelated menu-bar items; SwiftBar still owns the HackermacUI workspace widget. |
 
 ## Third-Party Projects
@@ -77,6 +74,8 @@ The important design constraint is ownership. AeroSpace is the window manager. S
 ### AeroSpace
 
 AeroSpace is the core tiling window manager. HackermacUI uses it for public workspaces `1..4`, directional focus, resize, movement, floating toggles, app launch shortcuts, and workspace-change hooks. Machine-specific layouts live in templates.
+
+App launch shortcuts live on `Alt+*`, not `Cmd+*`: `Cmd+Enter`, `Cmd+B`, `Cmd+O`, `Cmd+D`, and `Cmd+Shift+F` collided with macOS/app defaults (bold, open, bookmark, search). Focus and window movement use vim-style `H/J/K/L` instead of arrow keys, freeing `Alt+Ctrl+Arrow` entirely and keeping `Alt+Shift+Arrow` for resize.
 
 Repo-owned files:
 
@@ -94,12 +93,14 @@ Key behavior:
 |---|---|
 | Workspace count | Four persistent workspaces in the public default profile. |
 | Main switching | `Alt+1..4`. |
-| Move focused window | `Alt+Ctrl+1..4`. |
+| Send window to workspace | `Alt+Ctrl+1..4`. |
 | Focus movement | `Alt+Arrow`. |
+| Reorder window | `Alt+Ctrl+Arrow`. |
 | Resize | `Alt+Shift+Arrow`. |
 | Floating toggle | `Alt+Shift+Space`. |
 | Next active workspace | `Alt+Tab`. |
-| App shortcuts | `Cmd+Enter` Ghostty, `Cmd+B` Chrome, `Cmd+F` Finder, `Cmd+O` Obsidian, `Cmd+D` LazyDocker, `Cmd+Shift+A` OpenCode CLI. |
+| App shortcuts | `Cmd+Enter` Ghostty, `Cmd+B` Chrome, `Cmd+Shift+F` Finder, `Cmd+O` Obsidian, `Cmd+D` LazyDocker, `Cmd+Shift+A` OpenCode CLI. |
+| Service mode | `Alt+Shift+;` enters it; `Esc` returns to main; `Shift+R` reloads config, other bindings unchanged. |
 
 ### SwiftBar
 
@@ -109,7 +110,7 @@ Repo-owned files:
 
 | File | Purpose |
 |---|---|
-| `configs/swiftbar/plugins/00-hackermacui.3s.sh` | Active SwiftBar plugin and HackermacUI dropdown. |
+| `configs/swiftbar/plugins/00-hackermacui.3s.sh` | Active SwiftBar plugin, HackermacUI dropdown, workspace switcher, and keybindings cheat sheet. |
 | `configs/swiftbar/plugins/.helpers/render-hackermac-workspaces.sh` | Captures AeroSpace state, prepares app/icon records, and emits the image header. |
 | `configs/swiftbar/plugins/.helpers/render-workspace-strip.jxa` | JXA renderer that creates the cached composite workspace image. |
 | `configs/swiftbar/README.md` | Widget rules, performance contract, and verification notes. |
@@ -120,9 +121,10 @@ Key behavior:
 |---|---|
 | Default plugins | `00-hackermacui.3s.sh` only. |
 | Refresh model | AeroSpace workspace-change hook plus 3-second fallback interval. |
-| Rendering | Cached composite PNG by default, with workspace numbers, focus styling, and app icons when available. |
+| Rendering | Cached composite PNG by default, retina-crisp (~22pt logical height), with workspace numbers, focus styling, monitor grouping, and app icons when available. |
+| Stability | Always renders every persistent workspace (live from `aerospace list-workspaces --all`), including a focused-but-empty one. |
 | Performance | State-hash invalidation for workspaces, cached composite rendering, and no remote polling. |
-| Interaction model | Mostly display-first; command actions belong in HackermacLauncher. |
+| Interaction model | Workspace switcher and a keybindings cheat sheet (parsed from the active `aerospace.toml`, cached by its mtime) in the dropdown; the menu bar itself is still a status surface, not a command center. |
 
 ### JankyBorders / borders
 
@@ -132,16 +134,16 @@ Repo-owned file:
 
 | File | Purpose |
 |---|---|
-| `configs/borders/bordersrc` | Starts `borders` with round 3px active gradient border, transparent inactive border, and app blacklist. |
+| `configs/borders/bordersrc` | Starts `borders` with a round 3px solid focus-green active border, transparent inactive border, and app blacklist; sources the shared theme palette. |
 
 Key behavior:
 
 | Behavior | Current state |
 |---|---|
-| Active border | Blue-to-red gradient. |
+| Active border | Solid focus green (`configs/theme/palette.env` `HACKERMACUI_COLOR_FOCUS`), the same color as Ghostty's selection/cursor. The SwiftBar strip keeps its own design. |
 | Inactive border | Transparent. |
-| Blacklist | HackermacLauncher, System Settings, Login Window, Notification Center, Control Center. |
-| Startup | Launched by AeroSpace `after-startup-command` and reloadable through launcher/theme actions. |
+| Blacklist | System Settings, Login Window, Notification Center, Control Center. |
+| Startup | Launched by AeroSpace `after-startup-command` and reloadable with `~/.config/borders/bordersrc`. |
 
 ### Ghostty
 
@@ -158,10 +160,12 @@ Key behavior:
 | Behavior | Current state |
 |---|---|
 | Visual style | Dark glass background with low opacity and macOS blur. |
+| Font | JetBrainsMono Nerd Font Mono, for both the terminal and the window title. |
+| Cursor and selection | Focus green (`HACKERMACUI_COLOR_FOCUS`), matching the border and the SwiftBar strip; cursor opacity `0.8`. |
+| ANSI palette | Red/green/blue (1/2/4) and their bright variants (9/10/12) aligned to GitHub Dark's terminal colors. |
 | Quick terminal | `Ctrl+Shift+Backtick` toggles the centered quick terminal. |
 | Tabs and splits | `Cmd+N`, `Cmd+T`, `Cmd+D`, `Cmd+Shift+D`. |
 | Shell integration | Cursor, sudo, title, path, and related Ghostty shell features. |
-| Launcher integration | HackermacLauncher opens TUIs and repo shells in Ghostty. |
 
 ### Shell And Developer Tools
 
@@ -180,73 +184,13 @@ Common tools:
 | `fzf` | Fuzzy selection in terminal workflows. |
 | `atuin` | Shell history. |
 | `zoxide` | Fast directory jumping. |
-| `lazygit` | Git TUI opened from launcher or terminal. |
-| `lazydocker` | Docker TUI opened from launcher or AeroSpace shortcut. |
+| `lazygit` | Git TUI opened from the terminal. |
+| `lazydocker` | Docker TUI opened from the AeroSpace shortcut or terminal. |
 | `gh` | GitHub CLI for repo workflows. |
 | `OrbStack` | Optional local container runtime. |
 | `PostgreSQL`, `Redis`, `Node.js`, `pnpm`, `Go` | Optional local development stack. |
 
 ## Own Projects
-
-### HackermacLauncher
-
-HackermacLauncher is a native Swift command center for HackermacUI. It is inspired by Omarchy's Walker menu, but it is not a Raycast clone and it is not a general-purpose shell prompt.
-
-It reads a declarative menu from JSON, renders a small glass SwiftUI panel, supports fuzzy filtering, and executes allowlisted action types. It currently runs as a SwiftPM app and registers `Option+Space` while running.
-
-Repo-owned files:
-
-| File | Purpose |
-|---|---|
-| `apps/HackermacLauncher/Package.swift` | SwiftPM package definition. |
-| `apps/HackermacLauncher/Sources/HackermacLauncher/main.swift` | App entrypoint, panel UI, fuzzy filtering, hotkey registration, config loading, and action runner. |
-| `apps/HackermacLauncher/README.md` | Launcher-specific run and config notes. |
-| `configs/launcher/menu.json` | Menu tree and declarative actions. |
-| `configs/launcher/theme.json` | Material, width, accent color, radius, max-row tuning, and hotkey. |
-
-Current menu areas:
-
-| Menu | Purpose |
-|---|---|
-| Agents | Opens OpenCode CLI, Codex CLI, Codex app, and Hermes over SSH. |
-| TUIs | Opens LazyGit, LazyDocker, btop, and Fastfetch in Ghostty. |
-| Gamemode | Moves to the gaming workspace, opens Steam, Discord, and Focus settings. |
-| Switch | Switches AeroSpace workspaces and runs workspace utility actions. |
-| Profiles | Swaps public/default and machine-specific templates. |
-| Install | Guarded Homebrew installers for optional terminal tools. |
-| Config | Opens repo-managed config files and folders. |
-| Terminal | Opens Ghostty, repo shells, tmux session, and status checks. |
-| Theme | Toggles macOS appearance, reloads borders, and refreshes SwiftBar. |
-| Keybindings | Searchable help map for the desktop shortcuts. |
-
-Supported action types:
-
-| Type | Purpose |
-|---|---|
-| `openApp` | Opens a macOS app by name. |
-| `openPath` | Opens a repo path or local path. |
-| `openURL` | Opens URLs and macOS URL schemes. |
-| `ghostty` | Runs a command in Ghostty, optionally from a working directory. |
-| `aerospace` | Runs AeroSpace CLI actions. |
-| `run` | Runs an allowlisted repo command. |
-| `appleScript` | Executes bounded AppleScript actions. |
-| `sequence` | Runs multiple declarative actions in order. |
-
-Safety model:
-
-| Rule | Why |
-|---|---|
-| Prefer schema actions over arbitrary input | Keeps launcher behavior auditable in `menu.json`. |
-| Confirmation for install actions | Prevents accidental system changes. |
-| Floating and borderless window | The command center should not participate in tiling or focus-border noise. |
-| Root reset on open | Each `Option+Space` starts from a predictable command surface. |
-
-Run it:
-
-```bash
-cd apps/HackermacLauncher
-swift run HackermacLauncher
-```
 
 ### AeroSpace Workspace SwiftBar Plugin
 
@@ -282,8 +226,7 @@ Core behavior:
 | SwiftBar plugins | `~/SwiftBarPlugins/` | `configs/swiftbar/plugins/` | `rsync --delete`. |
 | JankyBorders | `~/.config/borders/` | `configs/borders/` | `rsync --delete`. |
 | Ghostty | `~/.config/ghostty/` | `configs/ghostty/` | `rsync --delete`. |
-| Launcher menu | Repo-read config | `configs/launcher/menu.json` | Read by HackermacLauncher. |
-| Launcher theme | Repo-read config | `configs/launcher/theme.json` | Read by HackermacLauncher. |
+| Theme palette | `~/.config/hackermacui/theme/` | `configs/theme/` | `rsync --delete`. |
 | Template profiles | Repo-rendered config | `configs/templates/profiles/` | Rendered by `scripts/template.sh`. |
 | zsh example | Manual copy | `configs/zsh/zshrc.example` | Not applied automatically. |
 
@@ -292,16 +235,13 @@ Core behavior:
 ## Repository Layout
 
 ```txt
-apps/
-  HackermacLauncher/       Native Swift command center.
-
 configs/
   aerospace/               Tiling, workspaces, keybindings, and helper scripts.
   borders/                 JankyBorders focus-border config.
   ghostty/                 Terminal theme and keybindings.
-  launcher/                HackermacLauncher menu and theme JSON.
   swiftbar/                SwiftBar plugin and widget docs.
   templates/               Profile templates for public and machine-specific layouts.
+  theme/                   Shared color palette consumed by borders and Ghostty.
   zsh/                     Portable zsh example.
 
 docs/
@@ -320,9 +260,9 @@ scripts/
   bootstrap.sh             Safe curl/bootstrap entrypoint.
   onboard.sh               Guided first-run setup with explicit confirmations.
   install-deps.sh          Guarded Homebrew dependency installer.
+  update.sh                Update Homebrew packages, then run doctor checks.
   template.sh              Render/switch profile templates.
-  build-launcher-app.sh    Build local HackermacLauncher.app.
-  verify.sh                Shell, JSON, and Swift verification.
+  verify.sh                Shell, JSON, and config verification.
   status.sh                Read current desktop-management state.
   doctor.sh                Verify required apps, CLIs, and macOS settings.
   backup.sh                Copy live configs to a timestamped local backup.
@@ -333,19 +273,13 @@ scripts/
 
 ## Install And Safe Apply
 
-Install the core tools with Homebrew:
+`Brewfile` at the repo root is the single source of truth for dependencies. Install
+the core stack with Homebrew, plus optional groups as needed:
 
 ```bash
-brew install --cask nikitabobko/tap/aerospace swiftbar ghostty
-brew tap FelixKratz/formulae
-brew install borders gh fzf atuin zoxide zsh-autosuggestions zsh-syntax-highlighting
-```
-
-Optional development tools:
-
-```bash
-brew install lazygit lazydocker node pnpm go redis postgresql@16 postgresql@18 fastfetch bat ripgrep
-brew install --cask orbstack
+brew bundle --file Brewfile          # core stack (see docs/install.md for the full list)
+brew bundle --file Brewfile.dev      # optional local development tools
+brew bundle --file Brewfile.extras   # optional Ice menu-bar hider
 ```
 
 Use the guarded repo workflow:
@@ -370,13 +304,12 @@ After applying, open AeroSpace and SwiftBar once so macOS can grant any required
 ./scripts/status.sh       # show current desktop-management state
 ./scripts/onboard.sh      # guided setup with explicit confirmations
 ./scripts/doctor.sh       # verify required apps, CLIs, and macOS settings
+./scripts/update.sh       # update Homebrew packages, then run doctor checks
 ./scripts/backup.sh       # copy live configs to ~/.hackermacui/backups/<timestamp>
 ./scripts/check-drift.sh  # compare live configs against repo snapshots
 ./scripts/template.sh     # list, activate, render, and switch profile templates
-./scripts/verify.sh       # verify shell, JSON, config contracts, and Swift build
+./scripts/verify.sh       # verify shell, JSON, and config contracts
 ./scripts/release-check.sh # run publication/public-safety gate
-./scripts/build-launcher-app.sh # build dist/HackermacLauncher.app
-./scripts/launcher-login.sh # install/remove Launcher launch-at-login
 ./scripts/snapshot.sh     # private local snapshot, ignored by git
 ./scripts/apply.sh        # apply repo configs to the live machine after review
 ```
@@ -402,7 +335,7 @@ HackermacUI avoids overlapping desktop managers by default.
 
 | Tool | Why it is absent |
 |---|---|
-| Raycast | Replaced by HackermacLauncher for the command-center role. |
+| Raycast | Not part of the curated native stack. |
 | SketchyBar | SwiftBar owns the native menu-bar widget surface. |
 | Bartender | Ice is the preferred optional hider when menu-bar cleanup is needed. |
 | Hidden Bar | Ice is the preferred optional hider when menu-bar cleanup is needed. |
@@ -434,9 +367,8 @@ Local backups and snapshots belong under `~/.hackermacui/` or ignored paths.
 | Area | State |
 |---|---|
 | AeroSpace desktop config | Public four-workspace default plus swappable profile templates. |
-| HackermacLauncher | SwiftPM runtime flow plus local `.app` bundle build under `dist/`. |
 | SwiftBar workspace strip | Implemented with cached composite image rendering. |
-| JankyBorders | Active focus border with launcher/system blacklist. |
+| JankyBorders | Active focus border with system blacklist. |
 | Ghostty | Glass terminal config with developer keybindings. |
 | Public docs | This README plus focused docs under `docs/`. |
 

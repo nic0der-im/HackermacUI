@@ -11,7 +11,7 @@ else
 fi
 
 echo "== Services =="
-brew services list | egrep 'borders|atuin|redis|postgresql' || true
+brew services list | grep -E 'borders|atuin|redis|postgresql' || true
 
 echo
 echo "== HackermacUI profile =="
@@ -25,8 +25,8 @@ brew list sketchybar >/dev/null 2>&1 && echo "SketchyBar: still installed" || ec
 echo
 echo "== Desktop processes =="
 ps -axo pid,%cpu,%mem,rss,command \
-  | egrep 'SwiftBar|AeroSpace|borders|sketchybar|sketchybarrc|AltTab|Hammerspoon|Rift|yabai|skhd|Rectangle' \
-  | egrep -v 'egrep|status.sh|zsh -c' \
+  | grep -E 'SwiftBar|AeroSpace|borders|sketchybar|sketchybarrc|AltTab|Hammerspoon|Rift|yabai|skhd|Rectangle' \
+  | grep -Ev 'grep|status.sh|zsh -c' \
   | sort -k2 -nr || true
 
 echo

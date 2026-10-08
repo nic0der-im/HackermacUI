@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=lib/swiftbar-plugin-dir.sh
+source "$ROOT/scripts/lib/swiftbar-plugin-dir.sh"
+PLUGIN_DIR="$(swiftbar_plugin_dir)"
 STATE_DIR="$HOME/.hackermacui"
 BACKUP_DIR="$STATE_DIR/backups/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$BACKUP_DIR"
@@ -24,10 +28,11 @@ copy_file_if_exists() {
 }
 
 copy_file_if_exists "$HOME/.aerospace.toml" "$BACKUP_DIR/aerospace.toml"
-copy_if_exists "$HOME/SwiftBarPlugins/" "$BACKUP_DIR/SwiftBarPlugins/"
+copy_if_exists "$PLUGIN_DIR/" "$BACKUP_DIR/SwiftBarPlugins/"
 copy_if_exists "$HOME/.config/borders/" "$BACKUP_DIR/borders/"
 copy_if_exists "$HOME/.config/ghostty/" "$BACKUP_DIR/ghostty/"
 copy_if_exists "$HOME/.config/fastfetch/" "$BACKUP_DIR/fastfetch/"
+copy_if_exists "$HOME/.config/hackermacui/theme/" "$BACKUP_DIR/theme/"
 copy_if_exists "$HOME/.zshrc" "$BACKUP_DIR/zshrc"
 
 cat > "$STATE_DIR/state.json" <<JSON

@@ -11,12 +11,12 @@ metadata:
 
 ## Activation Contract
 
-Use when changing HackermacUI desktop behavior, app launchers, workspace rules, focus borders, terminal UX, menu-bar ownership, or tool interactions.
+Use when changing HackermacUI desktop behavior, app shortcuts, workspace rules, focus borders, terminal UX, menu-bar ownership, or tool interactions.
 
 ## Hard Rules
 
 - Read `docs/stack.md` and the affected config before editing.
-- Preserve ownership: AeroSpace owns tiling/workspaces/app launchers, SwiftBar owns native menu-bar widgets, JankyBorders owns focus borders, and Ghostty owns terminal feel.
+- Preserve ownership: AeroSpace owns tiling/workspaces/app shortcuts, SwiftBar owns native menu-bar widgets, JankyBorders owns focus borders, and Ghostty owns terminal feel.
 - Do not add overlapping managers such as SketchyBar, AltTab, Hammerspoon, Rift, yabai, skhd, Rectangle, or duplicate launch/focus layers without an explicit architecture decision.
 - Keep machine-specific assumptions visible and avoid new hardcoded personal paths in public config.
 - When changing workspace counts or routing, check AeroSpace config, helper scripts, SwiftBar workspace widgets, and docs together.

@@ -20,11 +20,20 @@ jobs:
       - name: Show tool versions
         run: |
           sw_vers
-          swift --version
           python3 --version
+          shellcheck --version
 
-      - name: Verify suite
-        run: ./scripts/verify.sh
+      - name: Shellcheck
+        run: |
+          files=()
+          while IFS= read -r -d '' file; do
+            head -n1 "$file" | grep -qE '^#!.*(bash|/bin/sh|/bin/dash)$' || continue
+            files+=("$file")
+          done < <(
+            find "$PWD/scripts" "$PWD/configs/aerospace/scripts" "$PWD/configs/swiftbar/plugins" "$PWD/configs/borders" \
+              -type f \( -name '*.sh' -o -perm -111 \) -print0 | sort -z
+          )
+          shellcheck -S warning "${files[@]}"
 
       - name: Release safety gate
         run: ./scripts/release-check.sh --ci

@@ -6,13 +6,13 @@ This setup keeps SwiftBar minimal: one native menu-bar widget for AeroSpace work
 
 | Plugin | Interval | Purpose | Performance rule |
 | --- | ---: | --- | --- |
-| `00-hackermacui.3s.sh` | 3s fallback | Shows a cached image-based AeroSpace workspace strip and HackermacUI dropdown. | Refreshes on AeroSpace workspace changes, delegates rendering to `.helpers/render-hackermac-workspaces.sh`, and falls back to text if image rendering fails. |
+| `00-hackermacui.3s.sh` | 3s fallback | Shows a cached image-based AeroSpace workspace strip, a workspace switcher, and a keybindings cheat sheet in the dropdown. | Refreshes on AeroSpace workspace changes, delegates rendering to `.helpers/render-hackermac-workspaces.sh`, reuses that helper's already-written workspace state instead of a second `aerospace` query for the dropdown, caches the keybindings cheat sheet by the active `aerospace.toml` mtime, and falls back to text if image rendering fails. |
 
 ## Rules
 
 - Keep `~/SwiftBarPlugins` managed from `configs/swiftbar/plugins`. The repo is the source of truth and SwiftBar reads the synced plugin folder.
 - Keep only high-signal workspace UI active by default. Do not add GitHub, Docker, system, network, or service polling unless there is a concrete daily workflow.
-- Keep the workspace strip visually focused. The dropdown may expose small HackermacUI maintenance links, but command-center actions belong in HackermacLauncher.
+- Keep the workspace strip visually focused. The dropdown may expose small HackermacUI maintenance links; do not turn it into a command center.
 - Do not add sub-5-second plugins unless they are local, trivial, and proven not to leave child processes behind.
 - Do not run network/API checks from SwiftBar by default. Local interface inspection is acceptable when the workflow explicitly calls for it.
 - Do not use streaming commands in normal refresh plugins. Use finite commands that print and exit.
@@ -25,7 +25,7 @@ This setup keeps SwiftBar minimal: one native menu-bar widget for AeroSpace work
 ```bash
 bash -n configs/swiftbar/plugins/*.sh configs/swiftbar/plugins/.helpers/*.sh
 for plugin in "$HOME"/SwiftBarPlugins/*.sh; do time "$plugin" >/dev/null; done
-ps -axo pid,ppid,etime,command | rg 'SwiftBarPlugins/.*\.sh|aerospace list-workspaces'
+ps -axo pid,ppid,etime,command | rg 'SwiftBarPlugins/.*\.sh|aerospace list-windows'
 ```
 
 The process check should only show the check command itself or very short-lived plugin executions.

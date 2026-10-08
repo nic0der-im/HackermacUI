@@ -70,7 +70,6 @@ check_private_paths_not_tracked() {
     'dist/*' \
     'build/*' \
     '.build/*' \
-    'apps/HackermacLauncher/.build/*' \
     'snapshots/*' \
     'backups/*' \
     'private/*' \
@@ -91,7 +90,6 @@ check_no_unignored_private_artifacts() {
     'dist/*' \
     'build/*' \
     '.build/*' \
-    'apps/HackermacLauncher/.build/*' \
     'snapshots/*' \
     'backups/*' \
     'private/*' \

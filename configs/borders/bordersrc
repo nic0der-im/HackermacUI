@@ -1,14 +1,56 @@
 #!/bin/bash
 set -eu
 
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+# Resolve the shared HackermacUI theme palette. Checks an explicit override,
+# then the deployed location apply.sh syncs (configs/theme -> ~/.config/hackermacui/theme),
+# then the repo path relative to this file, so this works both live and
+# when run straight from a checkout. Falls back to the palette.env defaults
+# below if nothing is found.
+resolve_hackermacui_palette() {
+  local candidates=() candidate script_dir repo_theme
+
+  [[ -n "${HACKERMACUI_PALETTE_ENV:-}" ]] && candidates+=("$HACKERMACUI_PALETTE_ENV")
+  candidates+=("$HOME/.config/hackermacui/theme/palette.env")
+
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)" || script_dir=""
+  if [[ -n "$script_dir" ]]; then
+    repo_theme="$(cd "$script_dir/../../configs/theme" 2>/dev/null && pwd)" || repo_theme=""
+    [[ -n "$repo_theme" ]] && candidates+=("$repo_theme/palette.env")
+  fi
+
+  for candidate in "${candidates[@]}"; do
+    [[ -n "$candidate" && -f "$candidate" ]] || continue
+    # shellcheck disable=SC1090
+    source "$candidate"
+    return 0
+  done
+  return 1
+}
+
+resolve_hackermacui_palette || true
+
+# Safe fallbacks matching configs/theme/palette.env if it could not be found.
+: "${HACKERMACUI_COLOR_FOCUS:=#7ee787}"
+
+# One focus color everywhere: the border uses the same green as the SwiftBar
+# strip's focused segment and Ghostty's selection/cursor colors.
+focus_hex="${HACKERMACUI_COLOR_FOCUS#'#'}"
+
 options=(
   style=round
   width=3.0
   hidpi=on
-  active_color='gradient(top_left=0xff79c0ff,bottom_right=0xffff7b72)'
+  active_color="0xff${focus_hex}"
   inactive_color=0x00000000
   background_color=0x00000000
-  blacklist='HackermacLauncher,System Settings,Login Window,Notification Center,Control Center'
+  blacklist='System Settings,Login Window,Notification Center,Control Center'
 )
 
-/opt/homebrew/bin/borders "${options[@]}"
+BORDERS_BIN="$(command -v borders)" || {
+  echo "borders binary not found on PATH" >&2
+  exit 1
+}
+
+"$BORDERS_BIN" "${options[@]}"
