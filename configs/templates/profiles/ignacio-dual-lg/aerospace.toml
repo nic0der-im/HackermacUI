@@ -120,10 +120,10 @@ persistent-workspaces = ['1', '2', '3', '4', '5', '6']
 
 [mode.main.binding]
     # App launchers.
-    cmd-enter = 'exec-and-forget open -na Ghostty'
-    cmd-b = 'exec-and-forget open -na "Google Chrome"'
-    cmd-shift-f = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/finder-new-window"'
-    cmd-o = 'exec-and-forget open -na Obsidian'
+    cmd-enter = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/on-mouse-monitor.sh open -na Ghostty"'
+    cmd-b = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/on-mouse-monitor.sh open -na \"Google Chrome\""'
+    cmd-shift-f = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/on-mouse-monitor.sh $HOME/.config/aerospace/scripts/finder-new-window"'
+    cmd-o = 'exec-and-forget /bin/bash -c "$HOME/.config/aerospace/scripts/on-mouse-monitor.sh open -na Obsidian"'
 
     # Focus. Arrows, plus JKLI: I up, J left, K down, L right.
     alt-left = 'focus left'
