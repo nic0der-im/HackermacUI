@@ -1,6 +1,6 @@
 background = #181a22
-background-blur = macos-glass-regular
-background-opacity = 0.33
+background-blur = false
+background-opacity = 0.9
 clipboard-write = ask
 # HackermacUI theme: cursor and selection use the shared focus green
 # (configs/theme/palette.env HACKERMACUI_COLOR_FOCUS), matching the
